@@ -26,11 +26,12 @@ public class Board {
     @Column(name = "description",length = 500, nullable = false)
     private String description;
 
-    @Column(name="created_at", length = 200, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name="created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name="updated_at", nullable=false)
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
+    ;
 
 
 

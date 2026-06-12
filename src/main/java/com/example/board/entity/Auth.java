@@ -27,7 +27,6 @@ public class Auth {
     @Column(name = "password", length = 200, nullable = false)
     private String password;
 
-=
     @Column(name = "nick_name",length = 100, nullable = false)
     private String nickName;
 
