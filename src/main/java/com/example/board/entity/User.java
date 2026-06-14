@@ -1,22 +1,18 @@
 package com.example.board.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
-import javax.management.relation.Role;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "auth")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Auth {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,15 +26,30 @@ public class Auth {
     @Column(name = "nick_name",length = 100, nullable = false)
     private String nickName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     @Builder.Default
-    private Role role;
+    private Role role= Role.USER;
 
     @Column(name="created_at")
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name="updated_at", nullable=false)
+    @Column(name="updated_at")
+    @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public enum Role;
+    public enum Role{
+        ADMIN,USER
+    }
+
+    public static User from(String email, String nickName, String password, Role role){
+        return User.builder()
+                .email(email)
+                .password(password)
+                .nickName(nickName)
+                .role(role)
+                .build();
+
+    }
 }

@@ -1,39 +1,41 @@
 package com.example.board.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import com.example.board.board.dto.BoardDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "board")
+@Table(name = "boards")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
+    @Column(length = 100, nullable = false)
     private String name;
 
-    @Column(name = "description",length = 500, nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Builder.Default
     @Column(name="created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name="updated_at", nullable=false)
+    @Builder.Default
+    @Column(name="updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
-    ;
 
 
-
-
+    public static BoardDTO toDTO(Board board) {
+        return new BoardDTO(board.getId(), board.getName(), board.getDescription());
+    }
 }

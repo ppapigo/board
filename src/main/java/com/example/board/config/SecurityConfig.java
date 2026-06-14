@@ -1,0 +1,32 @@
+package com.example.board.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder(){
+        // 평문을 암호화하는 객체,암호화만 가능
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+        http.csrf(AbstractHttpConfigurer::disable)      //CSRF 비활성화
+                .formLogin(AbstractHttpConfigurer::disable)  //Spring Security Form Login 기능 사용 x
+                .httpBasic(AbstractHttpConfigurer::disable)  //Spring Security Form Login 기능 사용 x
+                    // 모든 요청을 무조건 허용
+                .authorizeHttpRequests(auth->auth.anyRequest().permitAll());
+
+        return  http.build();
+    }
+}

@@ -1,41 +1,56 @@
 package com.example.board.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.example.board.post.dto.PostDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "board")
+@Table(name = "posts")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title",length = 100, nullable = false)
+    @Column(length = 200, nullable = false)
     private String title;
 
-    @Column(name = "body",length = 500, nullable = false)
+    @Column(columnDefinition = "TEXT")
     private String body;
 
-    @Column(name = "board_id", nullable = false)
-    private Long boardId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", nullable = false)
+    private Board board;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User author;
 
+    @Builder.Default
     @Column(name="created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name="updated_at", nullable=false)
+    @Builder.Default
+    @Column(name="updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    public static PostDTO toDTO(Post post){
+        PostDTO dto = new PostDTO();
+        dto.setId(post.getId());
+        dto.setTitle(post.getTitle());
+        dto.setAuthor(post.getAuthor().getNickName());
+        dto.setBoard(post.getBoard().getName());
+        dto.setBody(post.getBody());
+        dto.setCreatedAt(post.getCreatedAt().toString());
+
+        return dto;
+    }
 
 }
 
