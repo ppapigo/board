@@ -1,6 +1,6 @@
 package com.example.board.post;
 
-import com.example.board.entity.Post;
+import com.example.board.global.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

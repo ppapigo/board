@@ -65,3 +65,7 @@ public class AuthController {
 
 // JWT : JSON Web Token
 // Refresh Token, Access Token
+
+// Redis(DB, NoSQL, Cache) -> 메모리 기반 데이터베이스
+
+// SQL 기반의 DB

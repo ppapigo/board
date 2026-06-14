@@ -1,6 +1,6 @@
 package com.example.board.auth;
 
-import com.example.board.entity.User;
+import com.example.board.global.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

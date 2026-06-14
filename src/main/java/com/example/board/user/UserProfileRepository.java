@@ -1,7 +1,7 @@
 package com.example.board.user;
 
-import com.example.board.entity.User;
-import com.example.board.entity.UserProfile;
+import com.example.board.global.entity.User;
+import com.example.board.global.entity.UserProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

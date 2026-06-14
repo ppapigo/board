@@ -3,14 +3,17 @@ package com.example.board.auth;
 import com.example.board.auth.dto.LoginRequest;
 import com.example.board.auth.dto.SignupRequest;
 import com.example.board.auth.dto.UserResponse;
-import com.example.board.entity.User;
-import com.example.board.entity.UserProfile;
+import com.example.board.global.entity.User;
+import com.example.board.global.entity.UserProfile;
 import com.example.board.global.IngestResult;
+import com.example.board.global.exception.DuplicateUserException;
 import com.example.board.user.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.example.board.global.exception.ErrorCode.DUPLICATE_USER_EMAIL;
 
 @Service
 @RequiredArgsConstructor
@@ -24,9 +27,7 @@ public class AuthService {
         IngestResult result = new IngestResult();
 
         if(userRepository.existsByEmail(request.getEmail())){
-            result.setStatus("error");
-            result.setMessage("이미 존재하는 email 입니다");
-            return result;
+            throw new DuplicateUserException(DUPLICATE_USER_EMAIL);
         }
 
 

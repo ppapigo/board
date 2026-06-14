@@ -1,4 +1,4 @@
-package com.example.board.entity;
+package com.example.board.global.entity;
 
 import com.example.board.post.dto.PostDTO;
 import jakarta.persistence.*;

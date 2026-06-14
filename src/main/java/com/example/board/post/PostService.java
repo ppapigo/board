@@ -2,13 +2,12 @@ package com.example.board.post;
 
 import com.example.board.auth.UserRepository;
 import com.example.board.board.BoardRepository;
-import com.example.board.entity.Board;
-import com.example.board.entity.Post;
-import com.example.board.entity.User;
+import com.example.board.global.entity.Board;
+import com.example.board.global.entity.Post;
+import com.example.board.global.entity.User;
 import com.example.board.global.IngestResult;
 import com.example.board.post.dto.CreatePost;
 import com.example.board.post.dto.PostDTO;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
