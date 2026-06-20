@@ -1,7 +1,7 @@
 package com.example.board.post.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,9 +11,10 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreatePost {
+public class PostRequest {
 
     @NotBlank
+    @Size(min = 5, max = 200)
     private String title;
 
     @NotBlank

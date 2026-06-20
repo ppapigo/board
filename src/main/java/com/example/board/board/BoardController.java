@@ -1,10 +1,12 @@
 package com.example.board.board;
 
 import com.example.board.board.dto.BoardDTO;
-import com.example.board.board.dto.CreateBoard;
-import com.example.board.board.dto.CreateBoardResponse;
+import com.example.board.board.dto.BoardRequest;
+import com.example.board.board.dto.BoardResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,18 +20,40 @@ public class BoardController {
     private final BoardService boardService;
 
     @PostMapping("/new")
-    public CreateBoardResponse create(
+    public BoardResponse create(
             @SessionAttribute(name = LOGIN_USER_ID, required = false)
             Long loginUserId,
 
             @Valid
             @RequestBody
-            CreateBoard request){
+            BoardRequest request){
         return boardService.create(loginUserId,request);
     }
 
     @GetMapping("/all")
-    public List<BoardDTO> list(){
+    public List<BoardResponse> list(){
         return boardService.list();
+    }
+
+    @PutMapping("/{id}/update")
+    public BoardResponse update(
+            @PathVariable Long id,
+
+            @SessionAttribute(name = LOGIN_USER_ID, required = false)
+            Long loginUserId,
+
+            @RequestBody BoardRequest boardRequest){
+        return boardService.update(id,loginUserId,boardRequest);
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> delete(
+            @PathVariable Long id,
+
+            @SessionAttribute(name = LOGIN_USER_ID, required = false)
+            Long loginUserId
+    ) {
+        String result = boardService.delete(id, loginUserId);
+        return ResponseEntity.status(HttpStatus.OK).body((result));
     }
 }

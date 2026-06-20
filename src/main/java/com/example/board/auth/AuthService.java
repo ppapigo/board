@@ -7,13 +7,15 @@ import com.example.board.global.entity.User;
 import com.example.board.global.entity.UserProfile;
 import com.example.board.global.IngestResult;
 import com.example.board.global.exception.DuplicateUserException;
+import com.example.board.global.exception.NotFoundException;
+import com.example.board.global.exception.UnauthorizedException;
 import com.example.board.user.UserProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.example.board.global.exception.ErrorCode.DUPLICATE_USER_EMAIL;
+import static com.example.board.global.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -58,12 +60,12 @@ public class AuthService {
 
         // request로부터 주어진 email로 데이터 베이스에서 쿼리하여 UserEntity를 가져온다
         User user = userRepository.findByEmail(request.getEmail())
-                .orElse(null);
+                .orElseThrow(()->new NotFoundException(USER_NOT_FOUND));
 
         //패스워드 매칭
        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
            //비밀번호가 일치하지 않음
-
+            throw new UnauthorizedException(LOGIN_FAILED);
        }
 
        response.setId(user.getId());

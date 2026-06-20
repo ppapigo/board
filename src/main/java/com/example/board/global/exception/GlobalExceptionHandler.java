@@ -2,11 +2,13 @@ package com.example.board.global.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import static com.example.board.global.exception.ErrorCode.DUPLICATE_USER_EMAIL;
-import static com.example.board.global.exception.ErrorCode.INTERNAL_SERVER_ERROR;
+import java.sql.SQLIntegrityConstraintViolationException;
+
+import static com.example.board.global.exception.ErrorCode.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -16,8 +18,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.of(INTERNAL_SERVER_ERROR));
     }
 
-    @ExceptionHandler(DuplicateUserException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateUserError(DuplicateUserException ex){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of(DUPLICATE_USER_EMAIL));
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(MethodArgumentNotValidException ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(INVALID_INPUT));
     }
+
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessError(BusinessException ex){
+        ErrorCode errorCode = ex.getErrorCode();
+        return ResponseEntity.status(errorCode.getStatus()).body(ErrorResponse.of(errorCode));
+    }
+
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleSqlIntegrityError(SQLIntegrityConstraintViolationException ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(SQL_INTEGRITY_ERROR));
+    }
+    /*@ExceptionHandler(NotFoundUserException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundUserError(NotFoundUserException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.of(USER_NOT_FOUND));
+    }
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedError(UnauthorizedException ex){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorResponse.of(LOGIN_REQUIRED));
+    }*/
 }

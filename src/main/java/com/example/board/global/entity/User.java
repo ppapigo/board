@@ -2,10 +2,13 @@ package com.example.board.global.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "users")
 @Getter
 @Setter
@@ -36,6 +39,7 @@ public class User {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name="updated_at")
+    @LastModifiedDate
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 

@@ -2,12 +2,16 @@ package com.example.board.global.entity;
 
 
 import com.example.board.board.dto.BoardDTO;
+import com.example.board.board.dto.BoardResponse;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "boards")
 @Getter
 @Setter
@@ -31,11 +35,15 @@ public class Board {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder.Default
+    @LastModifiedDate
     @Column(name="updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
 
-    public static BoardDTO toDTO(Board board) {
-        return new BoardDTO(board.getId(), board.getName(), board.getDescription());
+    public static BoardResponse toDTO(Board board) {
+        return new BoardResponse(board.getId(),
+                board.getName(),
+                board.getDescription(),
+                board.getCreatedAt().toString());
     }
 }

@@ -1,6 +1,8 @@
 package com.example.board.auth.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +19,7 @@ public class LoginRequest {
     private String email;
 
     @NotBlank
+    @Size(min = 8)
     private String password;
 
 }

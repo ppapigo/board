@@ -6,13 +6,19 @@ import com.example.board.global.entity.Board;
 import com.example.board.global.entity.Post;
 import com.example.board.global.entity.User;
 import com.example.board.global.IngestResult;
-import com.example.board.post.dto.CreatePost;
+import com.example.board.global.exception.ErrorCode;
+import com.example.board.global.exception.ForbiddenException;
+import com.example.board.global.exception.NotFoundException;
+import com.example.board.global.exception.UnauthorizedException;
+import com.example.board.post.dto.PostRequest;
 import com.example.board.post.dto.PostDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -21,13 +27,24 @@ public class PostService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
 
-    @Transactional
-    public IngestResult create(Long boardId, Long loginUserId, CreatePost request){
-        Board board = boardRepository.findById(boardId)
-                .orElse(null);
+    public User requiredLogin(Long loginUserId){
+        if(loginUserId == null){
+            throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
+        }
+        return userRepository.findById(loginUserId)
+                .orElseThrow(()->new NotFoundException(ErrorCode.USER_NOT_FOUND));
+    }
 
-        User user = userRepository.findById(loginUserId)
-                .orElse(null);
+    @Transactional
+    public PostDTO create(Long boardId, Long loginUserId, PostRequest request){
+        System.out.println("Board ID: "+boardId);
+        System.out.println("User ID: "+loginUserId);
+
+        User user = requiredLogin(loginUserId);
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(()->new NotFoundException(ErrorCode.BOARD_NOT_FOUND));
+
 
         Post post = new Post();
         post.setTitle(request.getTitle());
@@ -37,7 +54,7 @@ public class PostService {
 
         postRepository.save( post );
 
-        return new IngestResult("OK", "OK");
+        return Post.toDTO(post);
 
     }
 
@@ -50,4 +67,44 @@ public class PostService {
     /*    public PostDTO findById(Long id){
             return postRepository.findById(id).orElse(null);
         } */
+    @Transactional
+    public PostDTO getPost(Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(()->new NotFoundException((ErrorCode.POST_NOT_FOUND)));
+        return Post.toDTO(post);
+    }
+
+
+    @Transactional
+    public PostDTO update(
+            Long loginUserId, Long postId,@Valid PostRequest request
+    ){
+        Post post = postRepository.findById(postId)
+                        .orElseThrow(()->new NotFoundException(ErrorCode.POST_NOT_FOUND));
+
+        //게시물 수정권한이 없다면 에러를 발생
+        User user = post.getAuthor();
+        if(!Objects.equals(user.getId(), loginUserId))
+            throw new ForbiddenException(ErrorCode.POST_ACCEPT_DENIED);
+
+        post.setTitle(request.getTitle());
+        post.setBody(request.getBody());
+
+        Post savedPost = postRepository.save( post );
+
+        return Post.toDTO(savedPost);
+    }
+
+
+    @Transactional
+    public void delete(Long loginUserId, Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(()->new NotFoundException(ErrorCode.POST_NOT_FOUND));
+
+        //게시물 수정권한이 없다면 에러를 발생
+        User user = post.getAuthor();
+        if(!Objects.equals(user.getId(), loginUserId))
+            throw new ForbiddenException(ErrorCode.POST_ACCEPT_DENIED);
+
+        postRepository.delete( post );
+    }
 }
