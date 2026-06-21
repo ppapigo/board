@@ -1,5 +1,6 @@
 package com.example.board.board;
 
+import com.example.board.auth.LoginUserId;
 import com.example.board.board.dto.BoardDTO;
 import com.example.board.board.dto.BoardRequest;
 import com.example.board.board.dto.BoardResponse;
@@ -21,7 +22,7 @@ public class BoardController {
 
     @PostMapping("/new")
     public BoardResponse create(
-            @SessionAttribute(name = LOGIN_USER_ID, required = false)
+            @LoginUserId
             Long loginUserId,
 
             @Valid
@@ -39,7 +40,7 @@ public class BoardController {
     public BoardResponse update(
             @PathVariable Long id,
 
-            @SessionAttribute(name = LOGIN_USER_ID, required = false)
+            @LoginUserId
             Long loginUserId,
 
             @RequestBody BoardRequest boardRequest){
@@ -50,7 +51,7 @@ public class BoardController {
     public ResponseEntity<String> delete(
             @PathVariable Long id,
 
-            @SessionAttribute(name = LOGIN_USER_ID, required = false)
+            @LoginUserId
             Long loginUserId
     ) {
         String result = boardService.delete(id, loginUserId);

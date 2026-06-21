@@ -16,6 +16,7 @@
     -403: Forbidden, 인증은 됬지만 권한음 없음
     -404: Not Found, 요청하는 리소스가 존재하지 않을때
     -409: Conflict: 충돌(중복)
+    -500: Internal Server Error, 내부 에러
     
 
 1. Authentication(인증) vs Authorization(인가)

@@ -20,3 +20,13 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         show_sql: true
         format_sql: true
+
+jwt:
+  secret: bXlfc3VwZXJfc2VjcmV0X2JvYXJkX2JhY2tlbmRfYXBwX3RyYWluaW5nX2tleQ==
+  access-token-validity-seconds: 60 #1시간
+
+logging:
+  level:
+    com.example.board: DEBUG
+    org.springframework.web.client: DEBUG
+    org.springframework.security.web.FilterChainProxy: DEBUG

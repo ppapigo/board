@@ -1,5 +1,6 @@
 package com.example.board.global.entity;
 
+import com.example.board.user.dto.UserProfileResponse;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -48,4 +49,15 @@ public class UserProfile {
     @Column(name="updated_at", nullable=false)
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
+
+    public static UserProfileResponse toDTO(UserProfile user){
+        UserProfileResponse dto =new UserProfileResponse();
+        dto.setNickName(user.getUserName());
+        dto.setBirth(user.getBirth() != null ? user.getBirth().toString() : null);
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setCreatedAt(user.getCreatedAt().toString());
+
+        return dto;
+    }
+
 }

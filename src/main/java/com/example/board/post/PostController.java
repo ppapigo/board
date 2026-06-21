@@ -1,5 +1,6 @@
 package com.example.board.post;
 
+import com.example.board.auth.LoginUserId;
 import com.example.board.global.IngestResult;
 import com.example.board.post.dto.PostRequest;
 import com.example.board.post.dto.PostDTO;
@@ -23,7 +24,7 @@ public class PostController {
             @PathVariable
             Long boardId,
 
-            @SessionAttribute(name = LOGIN_USER_ID, required = false)
+            @LoginUserId
             Long loginUserId,
 
             @Valid
@@ -49,7 +50,7 @@ public class PostController {
     public PostDTO update(
         @PathVariable(name = "postId") Long id,
 
-        @SessionAttribute(name = LOGIN_USER_ID, required = false)
+        @LoginUserId
         Long loginUserId,
 
         @Valid
@@ -64,7 +65,7 @@ public class PostController {
     public void delete(
             @PathVariable Long postId,
 
-            @SessionAttribute(name = LOGIN_USER_ID, required = false)
+            @LoginUserId
             Long loginUserId
     ){
         postService.delete(postId,loginUserId);

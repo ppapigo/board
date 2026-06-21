@@ -36,15 +36,12 @@ public class AuthController {
     public ResponseEntity<UserResponse> login(
             @Valid
             @RequestBody
-            LoginRequest request,
-            HttpSession session){
+            LoginRequest request
+            ){
 
         UserResponse response = authService.login(request);
 
-        //웹서버 세션 객체에 사용자 아이디를 저장시켜둠
-        session.setAttribute(LOGIN_USER_ID, response.getId());
-        Long id = (Long) session.getAttribute(LOGIN_USER_ID);
-        System.out.println("로그인: "+ id);
+
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
 
@@ -52,14 +49,8 @@ public class AuthController {
 
     @PostMapping("/logout")
     public void logout(HttpServletRequest request){
-        // HttpServletRequest에 의해 자동 주입되는 정보
 
-        HttpSession session = request.getSession(false);
-        if( session != null){
-            Long id = (Long) session.getAttribute(LOGIN_USER_ID);
-            System.out.println("로그아웃 처리: "+ id);
-            session.invalidate(); //세션 클리어
-        }
+
     }
 }
 
