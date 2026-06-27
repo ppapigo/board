@@ -23,7 +23,7 @@ spring:
 
 jwt:
   secret: bXlfc3VwZXJfc2VjcmV0X2JvYXJkX2JhY2tlbmRfYXBwX3RyYWluaW5nX2tleQ==
-  access-token-validity-seconds: 60 #1시간
+  access-token-validity-seconds: 3600 #1시간
 
 logging:
   level:

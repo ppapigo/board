@@ -1,11 +1,14 @@
 package com.example.board.post;
 
+import com.example.board.auth.CustomUserDetails;
 import com.example.board.auth.LoginUserId;
 import com.example.board.global.IngestResult;
+import com.example.board.global.entity.Board;
 import com.example.board.post.dto.PostRequest;
 import com.example.board.post.dto.PostDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,13 +27,13 @@ public class PostController {
             @PathVariable
             Long boardId,
 
-            @LoginUserId
-            Long loginUserId,
+           @AuthenticationPrincipal
+           CustomUserDetails userDetails,
 
             @Valid
             @RequestBody
             PostRequest request){
-        return postService.create(boardId, loginUserId,request);
+        return postService.create(boardId, userDetails.getId(), request);
 
     }
 
@@ -38,11 +41,19 @@ public class PostController {
     public List<PostDTO> list(){
         return postService.list();
     }
+
+    @GetMapping("/{boardId}/all")
+    public List<PostDTO> findByBoard(@PathVariable Long boardId){
+        return postService.findByBoardId(boardId);
+    }
+
     //모든 사용자 가능
-    @GetMapping("{postId}")
+    @GetMapping("{Id}")
     public PostDTO getPost(
-            @PathVariable Long postId){
-        return postService.getPost(postId);
+            @PathVariable Long id,
+            @AuthenticationPrincipal
+            CustomUserDetails userDetails){
+        return postService.getPost(userDetails.getId(), id);
     }
 
     //작성자만 가능
@@ -50,14 +61,14 @@ public class PostController {
     public PostDTO update(
         @PathVariable(name = "postId") Long id,
 
-        @LoginUserId
-        Long loginUserId,
+       @AuthenticationPrincipal
+       CustomUserDetails userDetails,
 
         @Valid
         @RequestBody
         PostRequest request
     ){
-        return postService.update(loginUserId, id, request);
+        return postService.update(userDetails.getId(), id, request);
     }
 
     //작성자만 가능
@@ -65,9 +76,9 @@ public class PostController {
     public void delete(
             @PathVariable Long postId,
 
-            @LoginUserId
-            Long loginUserId
+            @AuthenticationPrincipal
+            CustomUserDetails userDetails
     ){
-        postService.delete(postId,loginUserId);
+        postService.delete(postId, userDetails.getId());
     }
 }

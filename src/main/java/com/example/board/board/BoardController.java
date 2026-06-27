@@ -22,13 +22,10 @@ public class BoardController {
 
     @PostMapping("/new")
     public BoardResponse create(
-            @LoginUserId
-            Long loginUserId,
-
             @Valid
             @RequestBody
             BoardRequest request){
-        return boardService.create(loginUserId,request);
+        return boardService.create(request);
     }
 
     @GetMapping("/all")
@@ -40,21 +37,15 @@ public class BoardController {
     public BoardResponse update(
             @PathVariable Long id,
 
-            @LoginUserId
-            Long loginUserId,
-
             @RequestBody BoardRequest boardRequest){
-        return boardService.update(id,loginUserId,boardRequest);
+        return boardService.update(id,boardRequest);
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(
-            @PathVariable Long id,
-
-            @LoginUserId
-            Long loginUserId
+            @PathVariable Long id
     ) {
-        String result = boardService.delete(id, loginUserId);
+        String result = boardService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body((result));
     }
 }

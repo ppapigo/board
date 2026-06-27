@@ -28,18 +28,18 @@ public class JwtTokenProvider {
         log.debug("JwtTokenProvider 생성됨: {}" , base64Secret);
     }
 
-    public String createToken(Long userId){
+    public String createToken(String userEmail){
         Date now = new Date(); //발급시간
         Date expiration = new Date( now.getTime() + accessTokenValiditySeconds * 1000); //만료시간
         return Jwts.builder()
-                .subject(String.valueOf(userId))
+                .subject(userEmail)
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(key)
                 .compact();
     }
 
-    public Long getUserId(String token){
+    public String getUserEmail(String token){
         String subject = Jwts.parser()
                 .verifyWith(key)
                 .build()
@@ -49,7 +49,7 @@ public class JwtTokenProvider {
 
         log.debug("토큰으로부터 사용자 ID 추출: {}", subject);
 
-        return Long.valueOf(subject);
+        return subject;
     }
 
     //서명된 토큰을 검증한다
