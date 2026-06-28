@@ -76,17 +76,18 @@ public class PostService {
 
     @Transactional
     public PostDTO update(
-            Long loginUserId, Long postId,@Valid PostRequest request
+            Long postId,@Valid PostRequest request
     ){
         Post post = postRepository.findById(postId)
                         .orElseThrow(()->new NotFoundException(ErrorCode.POST_NOT_FOUND));
 
-        validateAuthor(post, loginUserId);
+       /* validateAuthor(post, loginUserId);
 
         //게시물 수정권한이 없다면 에러를 발생
         User user = post.getAuthor();
-        if(!Objects.equals(user.getId(), loginUserId))
+        if(!Objects.equals(user.getId(), loginUserId)) {
             throw new ForbiddenException(ErrorCode.POST_ACCESS_DENIED);
+        } */
 
         post.setTitle(request.getTitle());
         post.setBody(request.getBody());
@@ -98,17 +99,17 @@ public class PostService {
 
 
     @Transactional
-    public void delete(Long loginUserId, Long postId) {
+    public void delete( Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(()->new NotFoundException(ErrorCode.POST_NOT_FOUND));
 
-        validateAuthor(post, loginUserId);
+       /* validateAuthor(post, loginUserId);
 
         //게시물 수정권한이 없다면 에러를 발생
         User user = post.getAuthor();
         if(!Objects.equals(user.getId(), loginUserId))
             throw new ForbiddenException(ErrorCode.POST_ACCESS_DENIED);
-
+*/
         postRepository.delete( post );
     }
 

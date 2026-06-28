@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import static com.example.board.auth.AuthController.LOGIN_USER_ID;
 public class BoardController {
     private final BoardService boardService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/new")
     public BoardResponse create(
             @Valid
@@ -33,6 +35,7 @@ public class BoardController {
         return boardService.list();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/update")
     public BoardResponse update(
             @PathVariable Long id,
@@ -41,6 +44,7 @@ public class BoardController {
         return boardService.update(id,boardRequest);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(
             @PathVariable Long id

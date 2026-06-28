@@ -8,6 +8,7 @@ import com.example.board.post.dto.PostRequest;
 import com.example.board.post.dto.PostDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,6 +58,7 @@ public class PostController {
     }
 
     //작성자만 가능
+    @PreAuthorize("@postSecurity.isAuthor(#id, authentication.principal)")
     @PutMapping("/{postId}/update")
     public PostDTO update(
         @PathVariable(name = "postId") Long id,
@@ -68,17 +70,15 @@ public class PostController {
         @RequestBody
         PostRequest request
     ){
-        return postService.update(userDetails.getId(), id, request);
+        return postService.update( id, request);
     }
 
     //작성자만 가능
+    @PreAuthorize("@postSecurity.isAuthor(#id, authentication.principal)")
     @DeleteMapping("/{postId}/delete")
     public void delete(
-            @PathVariable Long postId,
-
-            @AuthenticationPrincipal
-            CustomUserDetails userDetails
+            @PathVariable Long id
     ){
-        postService.delete(postId, userDetails.getId());
+        postService.delete(id);
     }
 }
