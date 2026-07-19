@@ -25,6 +25,13 @@ public enum ErrorCode {
     INVALID_BOARD_ID(HttpStatus.BAD_REQUEST, "해당 Board ID는 삭제할 수 없습니다."),
     INVALID_OAUTH_STATE(HttpStatus.UNAUTHORIZED, "정상적인 인증 요청이 아닙니다."),
 
+    INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST,"지원하지 않는 파일 형식입니다"),
+    INVALID_FILE_UPLOAD_DIR(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드 디렉토리 실패"),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드 실패"),
+    FILE_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"파일 업로드 개수 초과"),
+    MAX_UPLOAD_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST,"파일 용량 초과"),
+
+
     SQL_INTEGRITY_ERROR(HttpStatus.BAD_REQUEST, "데이터베이스 참조 무결성 위배 에러입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 내부 에러가 발생했습니다.");
 

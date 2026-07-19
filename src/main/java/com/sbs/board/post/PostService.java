@@ -4,6 +4,7 @@ import com.sbs.board.auth.UserRepository;
 import com.sbs.board.board.BoardRepository;
 import com.sbs.board.global.entity.Board;
 import com.sbs.board.global.entity.Post;
+import com.sbs.board.global.entity.PostImage;
 import com.sbs.board.global.entity.User;
 import com.sbs.board.global.exception.ErrorCode;
 import com.sbs.board.global.exception.ForbiddenException;
@@ -13,10 +14,14 @@ import com.sbs.board.post.dto.PostRequest;
 import com.sbs.board.post.dto.PostDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,6 +31,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     public User requiredLogin(Long loginUserId) {
         if (loginUserId == null) {
@@ -37,24 +43,53 @@ public class PostService {
     }
 
     @Transactional
-    public PostDTO create(Long boardId, Long loginUserId, PostRequest request) {
+    public PostDTO create(Long boardId, Long loginUserId, PostRequest request, List<MultipartFile>images) {
         System.out.println("Board ID: " + boardId);
         System.out.println("User ID: " + loginUserId);
 
-        User user = requiredLogin(loginUserId);
+        //User user = requiredLogin(loginUserId);
 
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.BOARD_NOT_FOUND));
 
-        Post post = new Post();
-        post.setTitle(request.getTitle());
-        post.setBody(request.getBody());
-        post.setBoard(board);
-        post.setAuthor(user);
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(()->new NotFoundException(ErrorCode.USER_NOT_FOUND));
 
-        Post savedPost = postRepository.save( post );
+        List<String> storedNames = new ArrayList<>();
+        try{
+            Post post = new Post();
+            post.setTitle(request.getTitle());
+            post.setBody(request.getBody());
+            post.setBoard(board);
+            post.setAuthor(user);
 
-        return Post.toDTO( savedPost );
+            //required == false 이므로 null이면 처리하지 않는다.
+            if( images != null){
+                int order = 0;
+                for(MultipartFile file : images){
+                    String storedName = fileStorageService.store(file);
+                    storedNames.add(storedName);
+                    PostImage image = PostImage.builder()
+                                    .storedName(storedName) //실제 저장된 경로 + uuid파일명
+                                    .originalName(file.getOriginalFilename())
+                                    .contentType(file.getContentType())
+                                    .size(file.getSize())
+                                    .sortOrder(order++)
+                                    .build();
+
+                    post.addImage(image);
+                }
+            }
+
+            Post savedPost = postRepository.save( post );
+            return Post.toDTO( savedPost );
+        }catch(RuntimeException ex){
+            //삭제 처리를 해야함
+           for(String fileName : storedNames){
+               fileStorageService.delete(fileName);
+           }
+            throw ex;
+        }
     }
 
     @Transactional(readOnly = true)
@@ -64,12 +99,11 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostDTO> findByBoardId(Long boardId) {
+    public Page<PostDTO> findByBoardId(Long boardId, Pageable pageable) {
 //        Board board = boardRepository.findById(boardId)
 //                .orElseThrow(()-> new NotFoundException(ErrorCode.BOARD_NOT_FOUND));
 
-        return postRepository.findByBoardId(boardId).stream()
-                .map(Post::toDTO).toList();
+        return postRepository.findByBoardId(boardId, pageable).map(Post::toDTO);
     }
 
     @Transactional(readOnly = true)

@@ -49,6 +49,11 @@ spring:
         show_sql: true
         format_sql: true
 
+  servlet:
+    multipart:
+      max-file-size: 2MB    #파일당 크기
+      max-request-size: 20MB #리퀘스트당 크기
+
 jwt:
   secret: c2VjcmV0X2tleV9ieV9zYnNfYWNhZGVteV8yMDI2MDcyMV9ib2FyZF9iYWNrX2VuZF9hcHA=
   access-token-validity-seconds: 3600 # 1Hour
@@ -60,6 +65,9 @@ app:
     secure: false
     same-site: Strict
     path: /api/auth
+
+  upload:
+    dir: ${APP_UPLOAD_DIR:./uploads}
 
   oauth:
     kakao:
