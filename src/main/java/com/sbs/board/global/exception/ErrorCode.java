@@ -11,6 +11,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시판을 찾을 수 없습니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다"),
 
     DUPLICATE_USER_EMAIL(HttpStatus.CONFLICT, "이미 사용중인 이메일입니다."),
     DUPLICATE_BOARD_NAME(HttpStatus.CONFLICT, "이미 존재하는 게시판입니다."),
@@ -30,6 +31,15 @@ public enum ErrorCode {
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드 실패"),
     FILE_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"파일 업로드 개수 초과"),
     MAX_UPLOAD_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST,"파일 용량 초과"),
+
+    CANNOT_REPLY_TO_REPLY(HttpStatus.BAD_REQUEST,"대댓글에 댓글을 달 수 없습니다"),
+    CANNOT_REPLY_TO_DELETED(HttpStatus.BAD_REQUEST,"삭제된댓글에 답글을 달 수 없습니다"),
+    CANNOT_EDIT_DELETED(HttpStatus.BAD_REQUEST,"삭제된 댓글은 수정할 수 없습니다"),
+    COMMENT_POST_MISMATCH(HttpStatus.BAD_REQUEST,"댓글을 달 수 있는 글이 아닙니다"),
+
+    CANNOT_VIEW_NOTIFICATIOIN(HttpStatus.FORBIDDEN,"해당 알림의 소유자만 조회가능 합니다"),
+
+    METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED,"잘못된 메소드 입니다"),
 
 
     SQL_INTEGRITY_ERROR(HttpStatus.BAD_REQUEST, "데이터베이스 참조 무결성 위배 에러입니다."),

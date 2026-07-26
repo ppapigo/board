@@ -106,10 +106,15 @@ public class PostService {
         return postRepository.findByBoardId(boardId, pageable).map(Post::toDTO);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PostDTO getPost(Long loginUserId, Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() ->new NotFoundException(ErrorCode.POST_NOT_FOUND));
+
+        //viewCount 증가
+        if(!post.isAuthor(loginUserId) && loginUserId!=null){
+            post.increaseViewCount();
+        }
 
         return Post.toDTO(post, loginUserId);
     }

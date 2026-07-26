@@ -66,6 +66,7 @@ public class Post {
         dto.setAuthor(post.getAuthor().getNickName());
         dto.setBoard(post.getBoard().getName());
         dto.setBody(post.getBody());
+        dto.setViewCount(post.getViewCount());
         dto.setCreatedAt(post.getCreatedAt().toString());
         dto.setCanEdit(owner);
         dto.setCanDelete(owner);

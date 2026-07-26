@@ -72,7 +72,9 @@ public class PostController {
                            @AuthenticationPrincipal
                            CustomUserDetails userDetails) {
 
-        return postService.getPost(userDetails.getId(), id);
+        Long viewerId = userDetails == null ? null : userDetails.getId();
+
+        return postService.getPost(viewerId, id);
     }
 
     // update, 작성자만 가능

@@ -45,22 +45,23 @@ public class FileStorageService {
     }
 
     public String store(MultipartFile file){
+
         if(file==null || file.isEmpty()){
             throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
         }
         String contentType = file.getContentType();
-        if(contentType == null || ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase(Locale.ROOT))){
+        if(contentType == null ||! ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase(Locale.ROOT))){
             throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
         }
         String extension = extractExtension(file.getOriginalFilename());
-        if(extension.isEmpty() || ALLOWED_EXTENSIONS.contains(extension)){
+        if(extension.isEmpty() || !ALLOWED_EXTENSIONS.contains(extension)){
             throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
         }
 
 
         String storedName = UUID.randomUUID().toString().replace("-","")+"."+extension;
         Path target = uploadPath.resolve(storedName).normalize(); // 경로 붙임
-        if(target.startsWith(uploadPath)){
+        if(!target.startsWith(uploadPath)){
             throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
         }
 

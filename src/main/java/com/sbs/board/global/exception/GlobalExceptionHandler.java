@@ -1,7 +1,9 @@
 package com.sbs.board.global.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -12,6 +14,8 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import static com.sbs.board.global.exception.ErrorCode.*;
 
 
+
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -45,6 +49,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(MAX_UPLOAD_SIZE_EXCEEDED));
     }
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotAllowedError(HttpRequestMethodNotSupportedException ex){
+        log.debug("HttpRequestMethodNotSupportedException");
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ErrorResponse.of(METHOD_NOT_ALLOWED));
+    }
 //    @ExceptionHandler(NotFoundUserException.class)
 //    public ResponseEntity<ErrorResponse> handleNotFoundUserError(NotFoundUserException ex) {
 //        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.of(USER_NOT_FOUND));
