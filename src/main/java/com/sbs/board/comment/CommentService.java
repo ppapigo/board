@@ -12,6 +12,8 @@ import com.sbs.board.global.exception.ErrorCode;
 import com.sbs.board.global.exception.NotFoundException;
 import com.sbs.board.notification.CommentCreateEvent;
 import com.sbs.board.post.PostRepository;
+import com.sbs.board.reaction.ReactionService;
+import com.sbs.board.reaction.dto.ReactionResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -19,6 +21,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -28,6 +34,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ReactionService reactionService;
 
     @Transactional
     public CommentResponse create(Long postId, Long userId,CommentCreateRequest request){
@@ -90,14 +97,50 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CommentResponse> getComment(Long postId, Pageable pageable) {
+    public Page<CommentResponse> getComment(Long postId, Long userId, Pageable pageable) {
 
         if (!postRepository.existsById(postId)) {
             throw new NotFoundException(ErrorCode.POST_NOT_FOUND);
         }
 
-        return commentRepository.findByPostIdAndParentIsNull(postId, pageable)
-                .map(Comment::toResponse);
+        Page<Comment> comments = commentRepository.findByPostIdAndParentIsNull(postId, pageable);
+        List<Long> commentIds = new ArrayList<>();
+        comments.getContent().forEach(comment -> collectCommentIds(comment, commentIds));
+        Map<Long, ReactionResponse> reactions =
+                reactionService.buildCommentReactionResponses(commentIds, userId);
+
+        return comments.map(comment -> toResponseWithReactions(comment, reactions));
+    }
+
+    private void collectCommentIds(Comment comment, List<Long> commentIds) {
+        commentIds.add(comment.getId());
+        if (comment.isRoot() && comment.getChildren() != null) {
+            comment.getChildren().forEach(child -> collectCommentIds(child, commentIds));
+        }
+    }
+
+    private CommentResponse toResponseWithReactions(
+            Comment comment,
+            Map<Long, ReactionResponse> reactions
+    ) {
+        CommentResponse response = Comment.toResponse(comment);
+        ReactionResponse reaction = reactions.getOrDefault(
+                comment.getId(),
+                new ReactionResponse(0, 0, null)
+        );
+
+        response.setLikeCount(reaction.getLikeCount());
+        response.setDislikeCount(reaction.getDislikeCount());
+        response.setMyReaction(reaction.getMyReaction());
+        response.setChildren(
+                comment.isRoot() && comment.getChildren() != null
+                        ? comment.getChildren().stream()
+                                .map(child -> toResponseWithReactions(child, reactions))
+                                .toList()
+                        : java.util.List.of()
+        );
+
+        return response;
     }
 
     public CommentResponse update(Long id, @Valid CommentCreateRequest request) {

@@ -1,6 +1,7 @@
 package com.sbs.board.comment.dto;
 
 
+import com.sbs.board.reaction.ReactionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,9 +21,10 @@ public class CommentResponse {
     private Long parent;
     private LocalDateTime createdAt;
     private boolean deleted;
+    private List<CommentResponse> children;
+    private long likeCount;
+    private long dislikeCount;
+    private ReactionType myReaction;
 
     public static final String DELETED_CONTENT = "삭제된 댓글입니다.";
-
-    public CommentResponse(Long id, String nickName, String content, String s, LocalDateTime createdAt, List<CommentResponse> children) {
-    }
 }

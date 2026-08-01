@@ -37,10 +37,15 @@ public class CommentController {
   @GetMapping("post/{postId}/list")
     public Page<CommentResponse> getComments(
             @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)Pageable pageable
             ){
 
-        return commentService.getComment(postId,pageable);
+        return commentService.getComment(
+                postId,
+                userDetails != null ? userDetails.getId() : null,
+                pageable
+        );
     }
 
     //작성자만 수정이 가능하게

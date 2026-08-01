@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.sbs.board.comment.dto.CommentResponse.DELETED_CONTENT;
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -84,11 +82,14 @@ public class Comment {
         return new CommentResponse(
                 comment.getId(),
                 comment.getUser().getNickName(),
-                comment.getContent(),
-                comment.isDeleted() ? DELETED_CONTENT : comment.getContent(),
+                comment.isDeleted() ? CommentResponse.DELETED_CONTENT : comment.getContent(),
+                comment.getParent() != null ? comment.getParent().getId() : null,
                 comment.getCreatedAt(),
-                children
-
+                comment.isDeleted(),
+                children,
+                0,
+                0,
+                null
         );
     }
 }

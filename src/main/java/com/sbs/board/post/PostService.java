@@ -12,6 +12,9 @@ import com.sbs.board.global.exception.NotFoundException;
 import com.sbs.board.global.exception.UnauthorizedException;
 import com.sbs.board.post.dto.PostRequest;
 import com.sbs.board.post.dto.PostDTO;
+import com.sbs.board.reaction.PostReaction;
+import com.sbs.board.reaction.PostReactionRepository;
+import com.sbs.board.reaction.ReactionType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,6 +35,7 @@ public class PostService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final PostReactionRepository postReactionRepository;
 
     public User requiredLogin(Long loginUserId) {
         if (loginUserId == null) {
@@ -116,7 +120,46 @@ public class PostService {
             post.increaseViewCount();
         }
 
-        return Post.toDTO(post, loginUserId);
+        return toDTOWithReaction(post, loginUserId);
+    }
+
+    private PostDTO toDTOWithReaction(
+            Post post,
+            Long loginUserId
+    ) {
+        PostDTO dto = Post.toDTO(post, loginUserId);
+
+        long likeCount =
+                postReactionRepository.countByPostIdAndType(
+                        post.getId(),
+                        ReactionType.LIKE
+                );
+
+        long dislikeCount =
+                postReactionRepository.countByPostIdAndType(
+                        post.getId(),
+                        ReactionType.DISLIKE
+                );
+
+        dto.setLike(likeCount);
+        dto.setDislike(dislikeCount);
+
+        if (loginUserId == null) {
+            dto.setMyReaction(null);
+        } else {
+            ReactionType myReaction =
+                    postReactionRepository
+                            .findByPostIdAndUserId(
+                                    post.getId(),
+                                    loginUserId
+                            )
+                            .map(PostReaction::getType)
+                            .orElse(null);
+
+            dto.setMyReaction(myReaction);
+        }
+
+        return dto;
     }
 
     @Transactional

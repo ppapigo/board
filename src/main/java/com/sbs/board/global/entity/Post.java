@@ -89,6 +89,7 @@ public class Post {
         dto.setCanDelete(false);
         dto.setImages(post.images.stream().map(PostImage::toDTO).toList());
 
+
         return dto;
     }
 

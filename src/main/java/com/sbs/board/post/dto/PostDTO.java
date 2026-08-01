@@ -2,6 +2,7 @@ package com.sbs.board.post.dto;
 
 import com.sbs.board.global.entity.Post;
 import com.sbs.board.global.entity.PostImage;
+import com.sbs.board.reaction.ReactionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,9 @@ public class PostDTO {
     private String body;
     private long viewCount;
     List<PostImageResponse> images;
+    private Long like;
+    private Long dislike;
+    private ReactionType myReaction;
     private String createdAt;
     private boolean canEdit;
     private boolean canDelete;

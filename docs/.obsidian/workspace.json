@@ -1,0 +1,209 @@
+{
+  "main": {
+    "id": "8bced0fddbc2193d",
+    "type": "split",
+    "children": [
+      {
+        "id": "2d7cf8374d2bb67a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2b800bdeb942fe5b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "07-프런트엔드-요구사항.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "07-프런트엔드-요구사항"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "db8b9d32f4c1a1f3",
+    "type": "split",
+    "children": [
+      {
+        "id": "b99bfe29b34471a5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d52a2d2181d1541e",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "파일 탐색기"
+            }
+          },
+          {
+            "id": "36fbf0ac93f6152d",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "검색"
+            }
+          },
+          {
+            "id": "070d30467dadf4e4",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "북마크"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "7e8b9a49ae73efc1",
+    "type": "split",
+    "children": [
+      {
+        "id": "f3f6174ee7893df3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "baf48079a7981a24",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "07-프런트엔드-요구사항.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "백링크"
+            }
+          },
+          {
+            "id": "e3339fc5b88165b5",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "07-프런트엔드-요구사항.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "나가는 링크"
+            }
+          },
+          {
+            "id": "9fa376e3ab16fbef",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "태그"
+            }
+          },
+          {
+            "id": "e12a41e5b55d802c",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "모든 속성"
+            }
+          },
+          {
+            "id": "82c9422e5175f632",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "07-프런트엔드-요구사항.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "개요"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:빠른 전환기 열기": false,
+      "graph:그래프 뷰 열기": false,
+      "canvas:새 캔버스 만들기": false,
+      "daily-notes:오늘의 일일 노트 열기": false,
+      "templates:템플릿 삽입": false,
+      "command-palette:명령어 팔레트 열기": false,
+      "bases:새 베이스 생성하기": false
+    }
+  },
+  "active": "2b800bdeb942fe5b",
+  "lastOpenFiles": [
+    "05-API-레퍼런스.md",
+    "무제 2.canvas",
+    "무제 1.canvas",
+    "무제.base",
+    "무제.canvas",
+    "01-프로젝트-개요.md",
+    "2026-08-01.md",
+    "06-개발-가이드.md",
+    "04-인증과-권한.md",
+    "03-도메인-모델.md",
+    "02-아키텍처.md",
+    "08-결정사항과-알려진-이슈.md",
+    "Http_Protocol.md",
+    "LLM_CONTEXT.md",
+    "07-프런트엔드-요구사항.md"
+  ]
+}
