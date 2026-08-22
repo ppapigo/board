@@ -38,3 +38,5 @@ out/
 
 # configuration
 .env
+.prod.env
+.env
