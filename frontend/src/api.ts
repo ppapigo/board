@@ -1,5 +1,6 @@
 import type { ApiErrorBody, Board, Comment, Notification, Page, Post, Profile, ReactionResponse, ReactionType, User } from './types';
 
+// @ts-ignore
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 let accessToken: string | null = null;
 let reissuePromise: Promise<boolean> | null = null;

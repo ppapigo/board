@@ -1,6 +1,7 @@
 package com.sbs.board.auth.jwt;
 
 import com.sbs.board.auth.CustomUserDetailService;
+import com.sbs.board.auth.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
+            request.setAttribute(LOGIN_USER_ID, ((CustomUserDetails) userDetails).getId());
         }
 
         // 다음 필터에 request, response 객체를 전달한다

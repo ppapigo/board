@@ -1,7 +1,6 @@
 package com.sbs.board.global.config;
 
 import com.sbs.board.auth.LoginUserIdResolver;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -19,14 +18,17 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @Slf4j
 @Configuration
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
-//@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-    //private final LoginUserIdResolver loginUserIdResolver;
+    private final LoginUserIdResolver loginUserIdResolver;
 
     private final String uploadDir;
 
-    public WebConfig(@Value("${app.upload.dir}") String uploadDir){
-        this.uploadDir=uploadDir;
+    public WebConfig(
+            @Value("${app.upload.dir}") String uploadDir,
+            LoginUserIdResolver loginUserIdResolver
+    ) {
+        this.uploadDir = uploadDir;
+        this.loginUserIdResolver = loginUserIdResolver;
     }
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry){
@@ -36,10 +38,10 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(location);
     }
 
-   /* @Override
+    @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         log.debug("WebConfig 인스턴스에서 addArgumentResolvers 호출됨");
 
         resolvers.add(loginUserIdResolver);
-    }*/
+    }
 }

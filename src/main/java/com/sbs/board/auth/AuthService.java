@@ -90,7 +90,10 @@ public class AuthService {
             response.setId(userDetails.getId());
             response.setEmail(userDetails.getUsername());
             response.setNickName(userDetails.getNickName());
-//            response.setRole(userDetails.getAuthorities());
+            response.setRole(userDetails.getAuthorities().stream()
+                    .findFirst()
+                    .map(authority -> authority.getAuthority().replaceFirst("^ROLE_", ""))
+                    .orElse(null));
             response.setAccessToken(BEARER+accessToken);
             response.setRefreshToken(refreshToken);
 
