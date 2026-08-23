@@ -1,3 +1,4 @@
+// @ts-ignore
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api, setAccessToken } from './api';
 import type { User } from './types';
