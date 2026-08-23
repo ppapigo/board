@@ -54,4 +54,5 @@ jobs:
             [ -d ~/board/.git ] || git clone https://github.com/ppapigo/board.git ~/board
             cd ~/board
             git fetch --all && git reset --hard origin/main
+            chmod +x ./scripts/deploy.sh
             ./scripts/deploy.sh
