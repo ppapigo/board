@@ -1,4 +1,4 @@
-set -euo pipfail
+set -euo pipefail
 
 echo ".env 생성"
 cat > .env << EOF
