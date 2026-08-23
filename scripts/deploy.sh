@@ -27,6 +27,11 @@ docker start mysql8 2>/dev/null || docker run -d --name mysql8 \
  echo "mysql8 ready"
 
  echo "빌드 보장을 위한 메모리 스왑"
+  if | swapon --show | grep -q /swapfile; then
+	  sudo fallocate -l 2G /swapfile 2>/dev/null || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+	  sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+	  echo " swap 2G 활성화"
+  fi
 
  echo "빌드"
  docker compose build app
