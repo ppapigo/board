@@ -7,7 +7,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-@Table(name = "users")
+@Table(name = "users",  uniqueConstraints = @UniqueConstraint(name = "uk_user", columnNames = {"email", "provider_id"}))
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Getter
@@ -20,7 +20,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", length = 500, nullable = false, unique = true)
+    @Column(name = "email", length = 500, nullable = false)
     private String email;
 
     @Column(name = "password", length = 200, nullable = false)
