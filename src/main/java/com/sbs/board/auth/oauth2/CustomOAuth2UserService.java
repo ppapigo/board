@@ -78,8 +78,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Transactional
     private User createUser(OAuth2Provider authProvider, Map<String, Object> attributes, String providerId) {
-        log.debug("createUser::authprovider: {}",authProvider);
-
         String email;
         User newUser = new User();
 

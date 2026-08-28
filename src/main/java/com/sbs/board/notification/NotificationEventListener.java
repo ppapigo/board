@@ -23,7 +23,6 @@ public class NotificationEventListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onCommentCreated(CommentCreateEvent event){
-        log.debug("댓글 생성 이벤트가 발생됨");
         NotificationType type;
         Long recipientId = 0L;
         Long commentId;
@@ -50,7 +49,7 @@ public class NotificationEventListener {
                     event.postId(),
                     event.commentId());
         }catch (RuntimeException ex){
-            log.error("알림 저장중 에러 발생: {}",ex.getMessage());
+            log.error("알림 저장 중 오류가 발생했습니다");
         }
     }
 }

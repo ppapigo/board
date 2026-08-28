@@ -48,9 +48,6 @@ public class PostService {
 
     @Transactional
     public PostDTO create(Long boardId, Long loginUserId, PostRequest request, List<MultipartFile>images) {
-        System.out.println("Board ID: " + boardId);
-        System.out.println("User ID: " + loginUserId);
-
         //User user = requiredLogin(loginUserId);
 
         Board board = boardRepository.findById(boardId)

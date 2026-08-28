@@ -42,8 +42,6 @@ public class LoginUserIdResolver implements HandlerMethodArgumentResolver {
             throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
         }
 
-        log.debug("LoginUserIdResolver에 의해 사용자 아이디 : {} 추출됨", loginUserId);
-
         // loginUserId 반환
         return loginUserId;
     }

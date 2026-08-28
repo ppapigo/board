@@ -6,17 +6,21 @@ KAKAO_REST_API=${KAKAO_REST_API}
 KAKAO_SECRET=${KAKAO_SECRET}
 GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
 GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+KAKAO_CALLBACK=${KAKAO_CALLBACK}
+APP_PUBLIC_BASE_URL=${APP_PUBLIC_BASE_URL}
+JWT_SECRET=${JWT_SECRET}
 DB_NAME=${DB_NAME}
 DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 EOF
+chmod 600 .env
 
 echo "mysql8준비 및 도커 네트워크 생성"
 docker network create board-net 2>/dev/null || true
 docker start mysql8 2>/dev/null || docker run -d --name mysql8 \
  --network board-net \
- -e MYSQL_ROOT_PASSWORD=${DB_PASSWORD} \
- -e MYSQL_DATABASE=${DB_NAME} \
+ -e MYSQL_ROOT_PASSWORD="${DB_PASSWORD}" \
+ -e MYSQL_DATABASE="${DB_NAME}" \
  -v mysql8-data:/var/lib/mysql \
  mysql:8.0.33 --default-time-zone=+09:00
  docker network connect board-net mysql8 2>/dev/null || true

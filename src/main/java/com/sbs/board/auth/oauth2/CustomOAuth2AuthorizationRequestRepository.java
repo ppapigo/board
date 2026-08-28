@@ -111,8 +111,6 @@ public class CustomOAuth2AuthorizationRequestRepository
             // 쿠키에 저장한 StoredRequest 객체 복원
             StoredRequest store = objectMapper.readValue(json, StoredRequest.class);
 
-           // log.debug("loadAuthorizationRequest(): "+redirectUri());
-
             return OAuth2AuthorizationRequest.authorizationCode()
                     .state(store.state())
                     .authorizationUri(store.authorizationUri())
@@ -123,7 +121,7 @@ public class CustomOAuth2AuthorizationRequestRepository
                             attrs.put(OAuth2ParameterNames.REGISTRATION_ID, store.registrationId()) )
                     .build();
         } catch (Exception e) {
-            log.warn("쿠키 복원 실패: {}", e.getMessage());
+            log.warn("OAuth2 인증 요청 쿠키를 복원하지 못했습니다");
             return null;
         }
     }

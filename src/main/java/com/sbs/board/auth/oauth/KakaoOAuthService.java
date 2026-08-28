@@ -34,10 +34,6 @@ public class KakaoOAuthService {
     public UserResponse login(String code) {
         KakaoTokenResponse tokenResponse = kakaoOAuthClient.requestToken(code);
         KakaoUserResponse userResponse = kakaoOAuthClient.fetchUserInfo(tokenResponse.getAccessToken());
-        System.out.println( userResponse );
-
-        log.debug("Kakao User Email: {}", userResponse.getEmail());
-
         User user = findOrCreateUser(userResponse);
         String accessToken = jwtTokenProvider.createToken(user.getEmail());
         String refreshToken = authService.issueRefreshToken(user.getId());
