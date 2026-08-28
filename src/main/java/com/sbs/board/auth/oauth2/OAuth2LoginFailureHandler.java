@@ -28,8 +28,6 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
 
-        log.debug("onAuthenticationFailure");
-
         ErrorCode errorCode = ErrorCode.LOGIN_FAILED;
 
         if(exception instanceof OAuth2DuplicateEmailException){

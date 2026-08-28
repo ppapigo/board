@@ -40,8 +40,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        log.debug("WebConfig 인스턴스에서 addArgumentResolvers 호출됨");
-
         resolvers.add(loginUserIdResolver);
     }
 }

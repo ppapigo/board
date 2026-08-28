@@ -48,8 +48,6 @@ public class KakaoOAuthController {
         // CSRF - 1회성 code를 생성
         String state = UUID.randomUUID().toString();
         String cookie = stateCookie(state, STATE_TTL).toString();
-        log.info("KakoOAuthController.login:cookie: {}", cookie);
-
         return ResponseEntity.status(HttpStatus.FOUND)  // 302
                 .location(URI.create(kakaoOAuthService.authorizeUrl(state)))    // 리다이렉트 주소
                 .header(HttpHeaders.SET_COOKIE, cookie)
@@ -73,11 +71,6 @@ public class KakaoOAuthController {
             @RequestParam(required = false) String error,
             @CookieValue(name = STATE_COOKIE_NAME, required = false) String stateCookie
     ) {
-//        log.info("callback ================================================");
-//        log.info("code: {}", code);
-//        log.info("state: {}", state);
-//        log.info("stateCookie: {}", stateCookie);
-//        log.info("================================================");
         if ( error != null || code == null) {
             throw new UnauthorizedException(ErrorCode.LOGIN_FAILED);
         }

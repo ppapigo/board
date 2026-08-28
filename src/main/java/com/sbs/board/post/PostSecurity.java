@@ -17,9 +17,6 @@ public class PostSecurity {
     @Transactional(readOnly = true)
     public boolean isAuthor(Long postId, CustomUserDetails user) {
 
-        log.debug("PostSecurity.isAuthor user.email: {}", user.getUsername());
-
-
         Long authorId = postRepository.findAuthorIdById(postId)
                 .orElseThrow(()->new NotFoundException(ErrorCode.POST_NOT_FOUND));
 

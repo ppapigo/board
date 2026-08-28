@@ -26,8 +26,6 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
 
         customOAuth2UserService.findOrCreate(registrationId, oidcUser.getAttributes());
-        log.debug("OIDC 사용자 로딩 완료: registration={}", registrationId);
-
         return oidcUser;
     }
 }

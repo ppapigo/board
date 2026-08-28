@@ -51,7 +51,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotAllowedError(HttpRequestMethodNotSupportedException ex){
-        log.debug("HttpRequestMethodNotSupportedException");
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(ErrorResponse.of(METHOD_NOT_ALLOWED));
     }

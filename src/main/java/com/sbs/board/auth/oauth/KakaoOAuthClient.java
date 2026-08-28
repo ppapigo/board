@@ -31,7 +31,6 @@ public class KakaoOAuthClient {
                 .build()
                 .toUriString();
 
-        log.info("카카오 인증 URI: {}", uri);
         return uri;
     }
 

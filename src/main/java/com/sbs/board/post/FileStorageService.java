@@ -38,7 +38,6 @@ public class FileStorageService {
     public void init(){
         try{
             Files.createDirectories(uploadPath);
-            log.debug("파일 업로드 디렉터리 준비됨: {}",uploadPath);
         } catch (IOException ex) {
             throw new BusinessException(ErrorCode.INVALID_FILE_UPLOAD_DIR);
         }
@@ -69,7 +68,7 @@ public class FileStorageService {
             Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING); //Overwrite Option으로 파일 복사
             return storedName;
         }catch (IOException ex){
-            log.error("파일 복사 에러: 파일명({}) {}",storedName, ex.getMessage());
+            log.error("파일 저장 중 오류가 발생했습니다");
             throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         }
 
@@ -83,7 +82,7 @@ public class FileStorageService {
             Path target = uploadPath.resolve(fileName).normalize();
             Files.deleteIfExists(target);
         }catch(IOException ex){
-            log.error("파일 삭제중 에러가 발생함: {}", ex.getMessage());
+            log.error("파일 삭제 중 오류가 발생했습니다");
         }
     }
 

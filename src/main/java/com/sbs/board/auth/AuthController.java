@@ -76,8 +76,6 @@ public class AuthController {
             throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
         }
 
-        log.debug("refresh token in cookie: {}", refreshToken);
-
         return authService.reissueToken(refreshToken);
     }
 }

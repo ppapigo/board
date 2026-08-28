@@ -25,7 +25,6 @@ public class JwtTokenProvider {
         // Base64 시크릿을 바이트로 디코드하여 서명용 Secret Key를 생성함(HS256알고리즘, 최소 32바이트)
         this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Secret));
         this.accessTokenValiditySeconds = accessTokenSeconds;
-        log.debug("JwtTokenProvider 생성됨: {}", base64Secret);
     }
 
     // userId를 subject에 담고 만료시간을 정해 서명된 토큰 문자열을 생성한다
@@ -49,8 +48,6 @@ public class JwtTokenProvider {
                 .getPayload()
                 .getSubject();
 
-        log.debug("토큰으로부터 사용자 ID 추출: {}", subject);
-
         return subject;
     }
 
@@ -62,10 +59,8 @@ public class JwtTokenProvider {
                     .build()
                     .parseSignedClaims(token);
 
-            log.debug("유효한 토큰: {}", token);
             return true;
         } catch (Exception e) {
-            log.debug("올바르지 않은 토큰: {}", token);
             return false;
         }
     }
