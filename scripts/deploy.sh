@@ -73,8 +73,7 @@ docker start mysql8 2>/dev/null || docker run -d --name mysql8 \
   fi
 
  echo "빌드"
- docker compose build app
- docker compose build frontend
+ docker compose build app frontend
 
  echo "빌드 후 재기동 + 헬스체크 까지"
  docker compose up -d --wait
