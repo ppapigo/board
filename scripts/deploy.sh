@@ -3,9 +3,7 @@ set -euo pipefail
 required_envs=(
   KAKAO_REST_API
   KAKAO_SECRET
-  KAKAO_CALLBACK
-  APP_PUBLIC_BASE_URL
-  JWT_SECRET
+  DEPLOY_HOST
   GOOGLE_CLIENT_ID
   GOOGLE_CLIENT_SECRET
   DB_NAME
@@ -23,6 +21,18 @@ done
 if [ "${#missing_envs[@]}" -gt 0 ]; then
   printf 'Missing required deployment environment variables: %s\n' "${missing_envs[*]}" >&2
   exit 1
+fi
+
+APP_PUBLIC_BASE_URL="${APP_PUBLIC_BASE_URL:-http://${DEPLOY_HOST}}"
+KAKAO_CALLBACK="${KAKAO_CALLBACK:-${APP_PUBLIC_BASE_URL}/api/oauth/kakao/callback}"
+
+JWT_SECRET_FILE="${HOME}/.board-jwt-secret"
+if [ -z "${JWT_SECRET:-}" ]; then
+  if [ ! -s "$JWT_SECRET_FILE" ]; then
+    umask 077
+    openssl rand -base64 48 > "$JWT_SECRET_FILE"
+  fi
+  JWT_SECRET="$(<"$JWT_SECRET_FILE")"
 fi
 
 echo ".env 생성"
