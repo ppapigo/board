@@ -1,5 +1,30 @@
 set -euo pipefail
 
+required_envs=(
+  KAKAO_REST_API
+  KAKAO_SECRET
+  KAKAO_CALLBACK
+  APP_PUBLIC_BASE_URL
+  JWT_SECRET
+  GOOGLE_CLIENT_ID
+  GOOGLE_CLIENT_SECRET
+  DB_NAME
+  DB_USERNAME
+  DB_PASSWORD
+)
+
+missing_envs=()
+for name in "${required_envs[@]}"; do
+  if [ -z "${!name:-}" ]; then
+    missing_envs+=("$name")
+  fi
+done
+
+if [ "${#missing_envs[@]}" -gt 0 ]; then
+  printf 'Missing required deployment environment variables: %s\n' "${missing_envs[*]}" >&2
+  exit 1
+fi
+
 echo ".env 생성"
 cat > .env << EOF
 KAKAO_REST_API=${KAKAO_REST_API}
