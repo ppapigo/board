@@ -36,3 +36,22 @@ footer { max-width:1120px; margin:auto; padding:35px 0; display:flex; justify-co
 .comment-actions { flex-wrap:wrap; align-items:center; }.comment-actions button.selected { color:var(--green); font-weight:700; }.comment-actions button.selected.dislike { color:#9e543a; }.comment-actions button:disabled { opacity:.55; cursor:wait; }.comment-actions b { font-size:10px; }
 
 @media (prefers-reduced-motion:reduce) { *,*:before,*:after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+
+/* 첨부 이미지의 원본 비율을 유지하고 프레임 안에서 잘리지 않게 표시한다. */
+.post-row>img {
+  object-fit:contain;
+  background:#ecebe4;
+}
+
+.image-gallery {
+  align-items:start;
+}
+
+.image-gallery img,
+.image-gallery img:first-child:last-child {
+  display:block;
+  height:auto;
+  max-height:none;
+  object-fit:contain;
+  background:#ecebe4;
+}
