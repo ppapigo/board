@@ -65,18 +65,24 @@ docker start mysql8 2>/dev/null || docker run -d --name mysql8 \
  'until docker exec mysql8 mysqladmin ping -uroot -p"$DB_PASSWORD" --silent 2>/dev/null; do sleep 2; done'
  echo "mysql8 ready"
 
- echo "빌드 보장을 위한 메모리 스왑"
-  if ! swapon --show | grep -q /swapfile; then
-	  sudo fallocate -l 2G /swapfile 2>/dev/null || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
-	  sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
-	  echo " swap 2G 활성화"
-  fi
+ #echo "빌드 보장을 위한 메모리 스왑"
+#  if ! swapon --show | grep -q /swapfile; then
+#	  sudo fallocate -l 2G /swapfile 2>/dev/null || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+#	  sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+#	  echo " swap 2G 활성화"
+ # fi
 
- echo "빌드"
- docker compose build app frontend
+ echo "GHCR 로그인"
+ echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
 
- echo "빌드 후 재기동 + 헬스체크 까지"
- docker compose up -d --wait
+
+ echo "이미지 pull"
+ docker compose pull
+
+ echo "컨테이너 실행 및 헬스체크 까지 대기"
+ docker compose up -d --no-build --wait
+ docker logout ghcr.io
+
 
  echo "이전 이미지 정리 및 최종 상태 보고"
  docker image prune -f
