@@ -10,6 +10,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TokenResponse {
+    private Long id;
+    private String email;
+    private String nickName;
+    private String role;
     private String accessToken;
     private String refreshToken;
 }

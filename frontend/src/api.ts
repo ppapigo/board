@@ -3,7 +3,8 @@ import type { ApiErrorBody, Board, Comment, Notification, Page, Post, Profile, R
 // @ts-ignore
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 let accessToken: string | null = null;
-let reissuePromise: Promise<boolean> | null = null;
+type AuthSession = User & { accessToken: string };
+let reissuePromise: Promise<AuthSession | null> | null = null;
 
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string) {
@@ -36,11 +37,11 @@ async function refreshAccessToken() {
     reissuePromise = fetch(`${API_BASE}/api/auth/reissue`, {
       method: 'POST', credentials: 'include',
     }).then(async (response) => {
-      if (!response.ok) return false;
-      const data = await response.json() as { accessToken: string };
+      if (!response.ok) return null;
+      const data = await response.json() as AuthSession;
       setAccessToken(data.accessToken);
-      return true;
-    }).catch(() => false).finally(() => { reissuePromise = null; });
+      return data;
+    }).catch(() => null).finally(() => { reissuePromise = null; });
   }
   return reissuePromise;
 }
@@ -69,7 +70,7 @@ export const api = {
   signup: (email: string, password: string, nickName: string) => request<{ status: string }>('/api/auth/signup', {
     method: 'POST', body: JSON.stringify({ email, password, nick_name: nickName, role: 'USER' }),
   }),
-  login: (email: string, password: string) => request<User & { accessToken: string }>('/api/auth/login', {
+  login: (email: string, password: string) => request<AuthSession>('/api/auth/login', {
     method: 'POST', body: JSON.stringify({ email, password }),
   }),
   logout: () => request<void>('/api/auth/logout', { method: 'POST' }),
