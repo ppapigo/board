@@ -140,9 +140,16 @@ function PostEditorPage({ edit = false }: { edit?: boolean }) {
 }
 
 function AuthPage({ signup = false }: { signup?: boolean }) {
-  const { login } = useAuth(); const navigate = useNavigate(); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [nickName, setNickName] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  const { login } = useAuth(); const navigate = useNavigate(); const location = useLocation(); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [nickName, setNickName] = useState(''); const [error, setError] = useState(() => new URLSearchParams(location.search).has('oauthError') ? '소셜 로그인에 실패했습니다. 다시 시도해 주세요.' : ''); const [busy, setBusy] = useState(false);
   const submit = async (event: FormEvent) => { event.preventDefault(); setBusy(true); setError(''); try { if (signup) await api.signup(email, password, nickName); await login(email, password); navigate('/', { replace: true }); } catch (e) { setError(messageOf(e)); } finally { setBusy(false); } };
   return <div className="auth-layout"><section className="auth-art"><Link className="brand light" to="/"><span className="brand-mark"><Icon name="logo" size={25}/></span>모아</Link><div><p className="eyebrow">WELCOME TO MOA</p><h1>{signup ? <>당신의 첫 이야기를<br/>기다리고 있어요.</> : <>다시 만나<br/>반가워요.</>}</h1><p>서로의 생각이 모여 더 넓은 세상이 됩니다.</p></div><blockquote>“좋은 대화는 작은 호기심에서 시작됩니다.”</blockquote></section><section className="auth-panel"><div className="auth-card"><p className="eyebrow green">{signup ? 'JOIN US' : 'SIGN IN'}</p><h2>{signup ? '회원가입' : '로그인'}</h2><p>{signup ? '모아에서 새로운 이야기를 시작하세요.' : '이메일로 모아에 들어오세요.'}</p><form onSubmit={submit}>{signup && <label>닉네임<input value={nickName} onChange={(e) => setNickName(e.target.value)} required placeholder="어떻게 불러드릴까요?"/></label>}<label>이메일<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="name@example.com"/></label><label>비밀번호<input type="password" minLength={8} maxLength={30} value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="8자 이상 입력해 주세요"/></label>{error && <p className="form-error" role="alert">{error}</p>}<button className="button accent full" disabled={busy}>{busy ? '잠시만요…' : signup ? '가입하고 시작하기' : '로그인'}</button></form><div className="divider"><span>또는</span></div><div className="social-row"><a className="button social kakao" href="/oauth2/authorization/kakao">Kakao</a><a className="button social" href="/oauth2/authorization/google">Google</a></div><p className="auth-switch">{signup ? '이미 계정이 있나요?' : '아직 계정이 없나요?'} <Link to={signup ? '/login' : '/signup'}>{signup ? '로그인' : '회원가입'}</Link></p></div></section></div>;
+}
+
+function OAuthCallbackPage() {
+  const { restoreSession } = useAuth(); const navigate = useNavigate(); const [error, setError] = useState('');
+  useEffect(() => { void restoreSession().then((ok) => { if (ok) navigate('/', { replace: true }); else setError('로그인 정보를 확인하지 못했습니다. 다시 로그인해 주세요.'); }); }, [navigate, restoreSession]);
+  if (error) return <div className="state fullscreen"><h1>로그인 실패</h1><p>{error}</p><Link className="button dark" to="/login">로그인으로 돌아가기</Link></div>;
+  return <div className="state fullscreen"><span className="spinner"/><p>로그인을 완료하고 있어요.</p></div>;
 }
 
 function NotificationsPage() {
@@ -178,7 +185,7 @@ function NotFoundPage() { return <div className="state fullscreen"><span classNa
 
 export default function App() {
   return <Routes>
-    <Route path="/login" element={<AuthPage/>}/><Route path="/signup" element={<AuthPage signup/>}/>
+    <Route path="/login" element={<AuthPage/>}/><Route path="/signup" element={<AuthPage signup/>}/><Route path="/oauth/callback" element={<OAuthCallbackPage/>}/>
     <Route path="*" element={<Layout><Routes>
       <Route path="/" element={<HomePage/>}/><Route path="/boards/:boardId" element={<BoardPage/>}/><Route path="/posts/:postId" element={<PostDetailPage/>}/>
       <Route path="/boards/:boardId/new" element={<Protected><PostEditorPage/></Protected>}/><Route path="/posts/:postId/edit" element={<Protected><PostEditorPage edit/></Protected>}/>

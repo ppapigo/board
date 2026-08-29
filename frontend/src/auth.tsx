@@ -1,5 +1,5 @@
 // @ts-ignore
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api, setAccessToken } from './api';
 import type { User } from './types';
 
@@ -7,6 +7,7 @@ interface AuthContextValue {
   user: User | null;
   restoring: boolean;
   login: (email: string, password: string) => Promise<void>;
+  restoreSession: () => Promise<boolean>;
   logout: () => Promise<void>;
 }
 
@@ -19,33 +20,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const [restoring, setRestoring] = useState(true);
 
+  const applySession = useCallback((response: User & { accessToken: string }) => {
+    setAccessToken(response.accessToken);
+    const nextUser: User = { id: response.id, email: response.email, nickName: response.nickName, role: response.role };
+    sessionStorage.setItem('board.user', JSON.stringify(nextUser));
+    setUser(nextUser);
+  }, []);
+
   useEffect(() => {
-    api.restore().then((ok) => {
-      if (!ok) {
+    api.restore().then((response) => {
+      if (response) {
+        applySession(response);
+      } else {
         sessionStorage.removeItem('board.user');
         setUser(null);
       }
     }).finally(() => setRestoring(false));
   }, []);
 
-  const value = useMemo<AuthContextValue>(() => ({
-    user,
-    restoring,
-    login: async (email, password) => {
-      const response = await api.login(email, password);
-      setAccessToken(response.accessToken);
-      const nextUser: User = { id: response.id, email: response.email, nickName: response.nickName, role: response.role };
-      sessionStorage.setItem('board.user', JSON.stringify(nextUser));
-      setUser(nextUser);
-    },
-    logout: async () => {
+  const login = useCallback(async (email: string, password: string) => {
+    const response = await api.login(email, password);
+    applySession(response);
+  }, [applySession]);
+
+  const restoreSession = useCallback(async () => {
+    const response = await api.restore();
+    if (!response) return false;
+    applySession(response);
+    return true;
+  }, [applySession]);
+
+  const logout = useCallback(async () => {
       try { await api.logout(); } finally {
         setAccessToken(null);
         sessionStorage.removeItem('board.user');
         setUser(null);
       }
-    },
-  }), [user, restoring]);
+  }, []);
+
+  const value = useMemo<AuthContextValue>(() => ({
+    user, restoring, login, restoreSession, logout,
+  }), [user, restoring, login, restoreSession, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

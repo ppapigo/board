@@ -167,6 +167,10 @@ public class AuthService {
         String newAccessToken = jwtTokenProvider.createToken(user.getEmail());
 
         TokenResponse response = new TokenResponse();
+        response.setId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setNickName(user.getNickName());
+        response.setRole(user.getRole().name());
         response.setAccessToken(newAccessToken);
         response.setRefreshToken(refreshToken);
 
