@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    image: board:latest
+    image: ghcr.io/ppapigo/board-app:latest #board:latest
     container_name: board-back-end
     env_file:
       - .env
@@ -36,7 +36,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: board-fe-react
+    image: ghcr.io/ppapigo/board-frontend:latest #board-fe-react
     container_name: board-fe-react
     #board-fe-react 가동 조건
     depends_on:
