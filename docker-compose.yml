@@ -47,7 +47,7 @@ services:
     networks:
       board-net:
     healthcheck:
-      test: [ "CMD", "ping", "127.0.0.1" ]
+      test: [ "CMD", "curl", "-fsS", "http://127.0.0.1/" ]
       interval: 10s
       timeout: 5s
       retries: 5
