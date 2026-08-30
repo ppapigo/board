@@ -51,7 +51,7 @@ public class NotificationService {
 
         if(!notification.isOwnedBy(userId) ){
             // 권한 에러 발생시킴
-            throw new BusinessException(ErrorCode.CANNOT_VIEW_NOTIFICATIOIN);
+            throw new BusinessException(ErrorCode.CANNOT_VIEW_NOTIFICATION);
         }
 
         notification.markAsRead();
