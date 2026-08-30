@@ -25,6 +25,8 @@ public enum ErrorCode {
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
     INVALID_BOARD_ID(HttpStatus.BAD_REQUEST, "해당 Board ID는 삭제할 수 없습니다."),
     INVALID_OAUTH_STATE(HttpStatus.UNAUTHORIZED, "정상적인 인증 요청이 아닙니다."),
+    EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 refresh token입니다.다시 로그인하세요"),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "잘못된 refresh token입니다."),
 
     INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST,"지원하지 않는 파일 형식입니다"),
     INVALID_FILE_UPLOAD_DIR(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드 디렉토리 실패"),
@@ -37,7 +39,7 @@ public enum ErrorCode {
     CANNOT_EDIT_DELETED(HttpStatus.BAD_REQUEST,"삭제된 댓글은 수정할 수 없습니다"),
     COMMENT_POST_MISMATCH(HttpStatus.BAD_REQUEST,"댓글을 달 수 있는 글이 아닙니다"),
 
-    CANNOT_VIEW_NOTIFICATIOIN(HttpStatus.FORBIDDEN,"해당 알림의 소유자만 조회가능 합니다"),
+    CANNOT_VIEW_NOTIFICATION(HttpStatus.FORBIDDEN,"해당 알림의 소유자만 조회가능 합니다"),
 
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED,"잘못된 메소드 입니다"),
 

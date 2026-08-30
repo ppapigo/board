@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -33,22 +34,37 @@ public class JwtTokenProvider {
         Date expiration = new Date(now.getTime() + accessTokenValiditySeconds * 1000); // 만료시간
         return Jwts.builder()
                 .subject(userEmail)
+                .id(UUID.randomUUID().toString()) //jti: 토큰 고유 식별자
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(key)
                 .compact();
     }
 
-    // 서명된 토큰 문자열을 받아 userId를 반환한다.
-    public String getUserEmail(String token) {
-        String subject = Jwts.parser()
+    public io.jsonwebtoken.Claims parseClaims(String token){
+        return Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
+                .getPayload();
+    }
+
+    // 서명된 토큰 문자열을 받아 userId를 반환한다.
+    public String getUserEmail(String token) {
+        String subject = parseClaims(token)
                 .getSubject();
 
         return subject;
+    }
+
+    public String getJti(String token){
+        return parseClaims(token).getId();
+    }
+
+    public long getRemainingSeconds(String token){
+        //토큰의 남은 유효시간 구하기
+        long remainMillis = parseClaims(token).getExpiration().getTime() - System.currentTimeMillis();
+        return Math.max(1, remainMillis/1000);
     }
 
     // 서명된 토큰을 검증한다
