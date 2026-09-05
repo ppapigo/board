@@ -7,3 +7,4 @@
 http://3.35.107.235 {
      reverse_proxy frontend:80 {
             header_up X-Forwarded-port {http.request.local.port}
+}
