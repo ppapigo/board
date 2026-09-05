@@ -78,6 +78,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
         with:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
