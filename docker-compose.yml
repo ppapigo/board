@@ -61,8 +61,6 @@ services:
     depends_on:
       app:
         condition: service_healthy
-    ports:
-      - "80:80"
     networks:
       board-net:
     healthcheck:
@@ -72,6 +70,26 @@ services:
       retries: 5
       start_period: 20s
     restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    depends_on:
+      frontend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:433"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-http://localhost}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - board-net
+    restart: unless-stopped
+
 
 networks:
   board-net:
