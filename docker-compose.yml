@@ -79,7 +79,7 @@ services:
         condition: service_healthy
     ports:
       - "80:80"
-      - "443:433"
+      - "443:443"
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-http://localhost}
     volumes:
