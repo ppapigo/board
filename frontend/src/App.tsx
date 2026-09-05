@@ -62,7 +62,20 @@ function PageState({ loading, error, empty, onRetry, children }: { loading?: boo
 function HomePage() {
   const [boards, setBoards] = useState<Board[]>([]); const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [query, setQuery] = useState('');
-  const load = useCallback(() => { setLoading(true); setError(''); Promise.all([api.boards(), api.allPosts()]).then(([b, p]) => { setBoards(b); setPosts(p.slice().reverse().slice(0, 6)); }).catch((e) => setError(messageOf(e))).finally(() => setLoading(false)); }, []);
+  const load = useCallback(() => {
+    setLoading(true); setError('');
+    api.boards()
+      .then(async (boards) => {
+        const pages = await Promise.all(boards.map((board) => api.posts(board.id)));
+        const recentPosts = pages
+          .flatMap((page) => page.content)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 6);
+        setBoards(boards); setPosts(recentPosts);
+      })
+      .catch((e) => setError(messageOf(e)))
+      .finally(() => setLoading(false));
+  }, []);
   useEffect(load, [load]);
   const visible = boards.filter((board) => `${board.name} ${board.description ?? ''}`.toLowerCase().includes(query.toLowerCase()));
   return <>
