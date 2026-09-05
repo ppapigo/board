@@ -79,7 +79,6 @@ export const api = {
   updateBoard: (id: number, data: { name: string; description: string }) => request<Board>(`/api/board/${id}/update`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteBoard: (id: number) => request<string>(`/api/board/${id}`, { method: 'DELETE' }),
   posts: (boardId: number, page = 0) => request<Page<Post>>(`/api/post/${boardId}/all?page=${page}&size=10&sort=createdAt,desc`),
-  allPosts: () => request<Post[]>('/api/post/all'),
   post: (id: number) => request<Post>(`/api/post/${id}`),
   createPost: (boardId: number, title: string, body: string, images: File[]) => {
     const form = new FormData();
