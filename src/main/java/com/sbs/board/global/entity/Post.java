@@ -14,7 +14,8 @@ import java.util.List;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "posts")
+@Table(name = "posts",
+        indexes = {@Index(name = "idx_posts_board_created_at", columnList = "board_id, created_at")})
 @Getter
 @Setter
 @NoArgsConstructor
