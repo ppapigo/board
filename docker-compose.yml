@@ -98,3 +98,5 @@ networks:
 
 volumes:
   uploads:
+  caddy-data:
+  caddy-config:
