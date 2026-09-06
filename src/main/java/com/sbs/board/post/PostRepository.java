@@ -38,8 +38,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByBoardIdOrderByCreatedAtDescIdDesc(Long boardId, Limit limit);
 
     @EntityGraph(attributePaths = {"board","author"})
-    @Query("select p from Post p where p.board.id=boardId " +
-            "and (p.createdAt < :lastCreatedAt or (p.createdAt = :lastCreatedAt and p.id< : lastId)) " +
+    @Query("select p from Post p where p.board.id = :boardId " +
+            "and (p.createdAt < :lastCreatedAt or (p.createdAt = :lastCreatedAt and p.id < :lastId)) " +
             "order by p.createdAt desc, p.id desc")
     List<Post> findSliceByBoardIdAfterCursor(
         @Param("boardId") Long boardId,
@@ -52,5 +52,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Long> findIdsByBoardId(@Param("boardId") Long boardId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"board","author"})
-    List<Post> findByBoardAndAuthorByIdIn(List<Long> ids);
+    List<Post> findWithBoardAndAuthorByIdIn(List<Long> ids);
 }

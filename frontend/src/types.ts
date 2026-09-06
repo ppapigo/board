@@ -12,12 +12,6 @@ export interface PostListItem {
   id: number; title: string; author: string; viewCount: number;
   thumbnailUrl: string | null; createdAt: string;
 }
-export interface PostCursorResponse {
-  items: PostListItem[];
-  hasNext: boolean;
-  lastCreatedAt: string | null;
-  lastId: number | null;
-}
 export interface Comment {
   id: number; authorUserName: string; content: string; parent: number | null;
   createdAt: string; deleted: boolean; children?: Comment[];

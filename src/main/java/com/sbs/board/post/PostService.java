@@ -11,6 +11,7 @@ import com.sbs.board.global.exception.ForbiddenException;
 import com.sbs.board.global.exception.NotFoundException;
 import com.sbs.board.global.exception.UnauthorizedException;
 import com.sbs.board.post.dto.PostCursorResponse;
+import com.sbs.board.post.dto.PostListResponse;
 import com.sbs.board.post.dto.PostRequest;
 import com.sbs.board.post.dto.PostDTO;
 import com.sbs.board.reaction.PostReaction;
@@ -28,7 +29,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -217,6 +221,22 @@ public class PostService {
                 :postRepository.findSliceByBoardIdAfterCursor(boardId,lastCreatedAt,lastId,limit);
 
         return PostCursorResponse.of( rows, size );
+    }
+
+
+    @Transactional(readOnly = true)
+    public Page<PostListResponse> getPosts(Long boardId, Pageable pageable){
+        if(!boardRepository.existsById(boardId)){
+            throw new NotFoundException(ErrorCode.BOARD_NOT_FOUND);
+        }
+
+        Page<Long> idPage = postRepository.findIdsByBoardId(boardId, pageable);
+        Map<Long, Post> postsById = idPage.hasContent()
+                ? postRepository.findWithBoardAndAuthorByIdIn(idPage.getContent())
+                  .stream().collect(Collectors.toMap(Post::getId, Function.identity()))
+                :Map.of();
+
+        return idPage.map(id->PostListResponse.from(postsById.get(id)));
     }
 //    public PostDTO findById(Long id) {
 //        return postRepository.findById(id).orElse(null);

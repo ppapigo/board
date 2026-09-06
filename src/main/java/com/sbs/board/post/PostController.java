@@ -6,6 +6,7 @@ import com.sbs.board.global.IngestResult;
 import com.sbs.board.global.exception.BusinessException;
 import com.sbs.board.global.exception.ErrorCode;
 import com.sbs.board.post.dto.PostCursorResponse;
+import com.sbs.board.post.dto.PostListResponse;
 import com.sbs.board.post.dto.PostRequest;
 import com.sbs.board.post.dto.PostDTO;
 import jakarta.validation.Valid;
@@ -69,6 +70,14 @@ public class PostController {
 
         return postService.findByBoardId(boardId, pageable);
     }
+
+    @GetMapping("/{boardId}/page")
+    public Page<PostListResponse> getPosts(@PathVariable Long boardId,
+                                           @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)Pageable pageable) {
+
+        return postService.getPosts(boardId, pageable);
+    }
+
 
     // id로 PostDTO 한개 반환하기, 모든 사용자 가능
     @GetMapping("/{id}")
