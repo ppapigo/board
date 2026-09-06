@@ -10,6 +10,7 @@ import com.sbs.board.global.exception.ErrorCode;
 import com.sbs.board.global.exception.ForbiddenException;
 import com.sbs.board.global.exception.NotFoundException;
 import com.sbs.board.global.exception.UnauthorizedException;
+import com.sbs.board.post.dto.PostCursorResponse;
 import com.sbs.board.post.dto.PostRequest;
 import com.sbs.board.post.dto.PostDTO;
 import com.sbs.board.reaction.PostReaction;
@@ -17,6 +18,7 @@ import com.sbs.board.reaction.PostReactionRepository;
 import com.sbs.board.reaction.ReactionType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -203,6 +205,19 @@ public class PostService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public PostCursorResponse getPostsByCursor(Long boardId, LocalDateTime lastCreatedAt, Long lastId, int size){
+        if(!boardRepository.existsById(boardId)){
+            throw new NotFoundException(ErrorCode.BOARD_NOT_FOUND);
+        }
+
+        Limit limit = Limit.of(size+1);
+        List<Post> rows = (lastCreatedAt == null || lastId==null)
+                ?postRepository.findByBoardIdOrderByCreatedAtDescIdDesc(boardId,limit)
+                :postRepository.findSliceByBoardIdAfterCursor(boardId,lastCreatedAt,lastId,limit);
+
+        return PostCursorResponse.of( rows, size );
+    }
 //    public PostDTO findById(Long id) {
 //        return postRepository.findById(id).orElse(null);
 //    }

@@ -1,5 +1,7 @@
 package com.sbs.board.post.dto;
 
+import com.sbs.board.global.entity.Post;
+import com.sbs.board.global.entity.PostImage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,4 +25,21 @@ public class PostListResponse {
     private String thumbnailUrl;
 
     private LocalDateTime createdAt;
+    
+    public static PostListResponse from(Post post){
+        String thumbnail = post.getImages()
+                .stream().findFirst()
+                .map(PostImage::getStoredName)
+                .map(name-> PostImage.URL_PREFIX +name)
+                .orElse(null);
+        
+        return new PostListResponse(
+                post.getId(),
+                post.getTitle(), 
+                post.getAuthor().getNickName(),
+                post.getViewCount(),
+                thumbnail,
+                post.getCreatedAt()
+        );
+    }
 }

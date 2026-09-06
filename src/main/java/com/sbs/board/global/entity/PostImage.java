@@ -38,7 +38,7 @@ public class PostImage {
     private LocalDateTime createdAt = LocalDateTime.now();
 
 
-    private static final String URL_PREFIX = "/images/";
+    public static final String URL_PREFIX = "/images/";
 
     public void assignPost(Post post){
         this.post = post;
