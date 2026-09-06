@@ -1,4 +1,4 @@
-import type { ApiErrorBody, Board, Comment, Notification, Page, Post, PostCursorResponse, Profile, ReactionResponse, ReactionType, User } from './types';
+import type { ApiErrorBody, Board, Comment, Notification, Page, Post, PostListItem, Profile, ReactionResponse, ReactionType, User } from './types';
 
 // @ts-ignore
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
@@ -79,14 +79,7 @@ export const api = {
   updateBoard: (id: number, data: { name: string; description: string }) => request<Board>(`/api/board/${id}/update`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteBoard: (id: number) => request<string>(`/api/board/${id}`, { method: 'DELETE' }),
   posts: (boardId: number, page = 0) => request<Page<Post>>(`/api/post/${boardId}/all?page=${page}&size=10&sort=createdAt,desc`),
-  postsByCursor: (boardId: number, lastCreatedAt?: string | null, lastId?: number | null, size = 20) => {
-    const params = new URLSearchParams({ size: String(size) });
-    if (lastCreatedAt && lastId != null) {
-      params.set('lastCreatedAt', lastCreatedAt);
-      params.set('lastId', String(lastId));
-    }
-    return request<PostCursorResponse>(`/api/post/${boardId}/posts/cursor?${params}`);
-  },
+  pagedPosts: (boardId: number, page = 0) => request<Page<PostListItem>>(`/api/post/${boardId}/page?page=${page}&size=10&sort=createdAt,desc`),
   post: (id: number) => request<Post>(`/api/post/${id}`),
   createPost: (boardId: number, title: string, body: string, images: File[]) => {
     const form = new FormData();
