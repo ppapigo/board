@@ -5,6 +5,7 @@ import com.sbs.board.auth.LoginUserId;
 import com.sbs.board.global.IngestResult;
 import com.sbs.board.global.exception.BusinessException;
 import com.sbs.board.global.exception.ErrorCode;
+import com.sbs.board.post.dto.PostCursorResponse;
 import com.sbs.board.post.dto.PostRequest;
 import com.sbs.board.post.dto.PostDTO;
 import jakarta.validation.Valid;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.sbs.board.auth.AuthController.LOGIN_USER_ID;
@@ -63,6 +66,7 @@ public class PostController {
     @GetMapping("/{boardId}/all")
     public Page<PostDTO> findByBoard(@PathVariable Long boardId,
                                      @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC)Pageable pageable) {
+
         return postService.findByBoardId(boardId, pageable);
     }
 
@@ -99,5 +103,20 @@ public class PostController {
         postService.delete(id);
 
         return ResponseEntity.status(HttpStatus.OK).body("ok");
+    }
+
+    @GetMapping("/{boardId}/posts/cursor")
+    public PostCursorResponse getPostsByCursor(
+            @PathVariable Long boardId,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime lastCreatedAt,
+            @RequestParam(required = false) Long lastId,
+            @RequestParam(defaultValue = "20") int size
+            ){
+        if(size<1 || size >100 ){
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+
+        return postService.getPostsByCursor(boardId, lastCreatedAt, lastId, size);
     }
 }

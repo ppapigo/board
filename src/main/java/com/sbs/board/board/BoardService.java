@@ -59,6 +59,7 @@ public class BoardService {
     // Read
     @Transactional(readOnly = true)
     public List<BoardResponse> list() {
+        System.out.println("ggg");
         return boardRepository.findAll().stream().map(Board::toDTO).toList();
     }
 
