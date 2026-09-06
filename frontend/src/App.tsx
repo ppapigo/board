@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ApiError, api, imageUrl } from './api';
 import { useAuth } from './auth';
@@ -102,18 +102,36 @@ function PostRow({ post }: { post: Post }) {
 
 function BoardPage() {
   const { boardId } = useParams(); const id = Number(boardId); const { user } = useAuth();
-  const [board, setBoard] = useState<Board>(); const [page, setPage] = useState<Page<PostListItem>>(); const [current, setCurrent] = useState(0); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
-  const load = useCallback(() => { setLoading(true); setError(''); Promise.all([api.boards(), api.pagedPosts(id, current)]).then(([boards, posts]) => { setBoard(boards.find((b) => b.id === id)); setPage(posts); }).catch((e) => setError(messageOf(e))).finally(() => setLoading(false)); }, [id, current]);
-  useEffect(load, [load]); const meta = page ? pageMeta(page) : null;
+  const [board, setBoard] = useState<Board>(); const [posts, setPosts] = useState<PostListItem[]>([]); const [hasNext, setHasNext] = useState(true); const [loading, setLoading] = useState(true); const [loadingMore, setLoadingMore] = useState(false); const [error, setError] = useState('');
+  const sentinelRef = useRef<HTMLDivElement>(null); const loadingRef = useRef(false); const nextPageRef = useRef(0); const generationRef = useRef(0);
+  const loadPage = useCallback(async (pageNumber: number, reset = false) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true; reset ? setLoading(true) : setLoadingMore(true); setError('');
+    const generation = generationRef.current;
+    try {
+      const result = await api.pagedPosts(id, pageNumber); const meta = pageMeta(result);
+      if (generation !== generationRef.current) return;
+      setPosts((current) => reset ? result.content : [...current, ...result.content.filter((item) => !current.some((post) => post.id === item.id))]);
+      nextPageRef.current = meta.number + 1; setHasNext(nextPageRef.current < meta.totalPages);
+    } catch (e) { if (generation === generationRef.current) setError(messageOf(e)); }
+    finally { if (generation === generationRef.current) { loadingRef.current = false; setLoading(false); setLoadingMore(false); } }
+  }, [id]);
+  useEffect(() => {
+    generationRef.current += 1; loadingRef.current = false; nextPageRef.current = 0; setPosts([]); setHasNext(true); setError('');
+    api.boards().then((boards) => setBoard(boards.find((b) => b.id === id))).catch((e) => setError(messageOf(e)));
+    void loadPage(0, true);
+  }, [id, loadPage]);
+  useEffect(() => {
+    const sentinel = sentinelRef.current; if (!sentinel || loading || !hasNext) return;
+    const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) void loadPage(nextPageRef.current); }, { rootMargin: '300px' });
+    observer.observe(sentinel); return () => observer.disconnect();
+  }, [hasNext, loadPage, loading]);
   return <div className="page narrow"><div className="page-banner"><div><Link to="/" className="back-link">← 모든 게시판</Link><p className="eyebrow green">BOARD</p><h1>{board?.name || '게시판'}</h1><p>{board?.description || '함께 나누고 싶은 이야기를 올려주세요.'}</p></div>{user && <Link className="button accent" to={`/boards/${id}/new`}><Icon name="write"/>글쓰기</Link>}</div>
-    <PageState loading={loading} error={error} empty={!loading && !error && !page?.content.length ? '아직 작성된 글이 없습니다' : undefined} onRetry={load}><div className="post-list">{page?.content.map((post) => <Link className="post-row" to={`/posts/${post.id}`} key={post.id}><div><h3>{post.title}</h3><div className="meta"><span>{post.author}</span><i/><span>{formatDate(post.createdAt)}</span><i/><span><Icon name="eye" size={15}/>{post.viewCount}</span></div></div>{post.thumbnailUrl && <img src={imageUrl(post.thumbnailUrl)} alt=""/>}<Icon name="arrow"/></Link>)}</div></PageState>
-    {meta && meta.totalPages > 1 && <Pagination current={meta.number} total={meta.totalPages} onChange={setCurrent}/>}</div>;
-}
-
-function Pagination({ current, total, onChange }: { current: number; total: number; onChange: (page: number) => void }) {
-  const start = Math.floor(current / 5) * 5; const pages = Array.from({ length: Math.min(5, total - start) }, (_, index) => start + index);
-  const move = (page: number) => { onChange(page); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  return <nav className="pagination" aria-label="페이지 이동"><button disabled={current === 0} onClick={() => move(current - 1)} aria-label="이전 페이지">←</button>{pages.map((page) => <button className={current === page ? 'active' : ''} onClick={() => move(page)} aria-current={current === page ? 'page' : undefined} key={page}>{page + 1}</button>)}<button disabled={current + 1 >= total} onClick={() => move(current + 1)} aria-label="다음 페이지">→</button></nav>;
+    <PageState loading={loading} error={!posts.length ? error : ''} empty={!loading && !error && !posts.length ? '아직 작성된 글이 없습니다' : undefined} onRetry={() => void loadPage(0, true)}><div className="post-list">{posts.map((post) => <Link className="post-row" to={`/posts/${post.id}`} key={post.id}><div><h3>{post.title}</h3><div className="meta"><span>{post.author}</span><i/><span>{formatDate(post.createdAt)}</span><i/><span><Icon name="eye" size={15}/>{post.viewCount}</span></div></div>{post.thumbnailUrl && <img src={imageUrl(post.thumbnailUrl)} alt=""/>}<Icon name="arrow"/></Link>)}</div></PageState>
+    {error && posts.length > 0 && <div className="infinite-status error-state"><p>{error}</p><button className="button outline compact" onClick={() => void loadPage(nextPageRef.current)}>다시 시도</button></div>}
+    {loadingMore && <div className="infinite-status"><span className="spinner"/><p>더 불러오는 중입니다</p></div>}
+    {!loading && hasNext && <div ref={sentinelRef} className="scroll-sentinel" aria-hidden="true"/>}
+    {!loading && !hasNext && posts.length > 0 && <p className="infinite-end">모든 게시글을 불러왔습니다.</p>}</div>;
 }
 
 function PostDetailPage() {
