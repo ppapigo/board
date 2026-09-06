@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ApiError, api, imageUrl } from './api';
 import { useAuth } from './auth';
-import type { Board, Comment, Notification, Page, Post, Profile, ReactionType } from './types';
-import { pageMeta } from './types';
+import type { Board, Comment, Notification, Page, Post, PostListItem, Profile, ReactionType } from './types';
 
 const date = new Intl.DateTimeFormat('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 const formatDate = (value: string) => { const parsed = new Date(value); return Number.isNaN(parsed.valueOf()) ? value : date.format(parsed); };
@@ -102,16 +101,26 @@ function PostRow({ post }: { post: Post }) {
 
 function BoardPage() {
   const { boardId } = useParams(); const id = Number(boardId); const { user } = useAuth();
-  const [board, setBoard] = useState<Board>(); const [page, setPage] = useState<Page<Post>>(); const [current, setCurrent] = useState(0); const [loading, setLoading] = useState(true); const [error, setError] = useState('');
-  const load = useCallback(() => { setLoading(true); setError(''); Promise.all([api.boards(), api.posts(id, current)]).then(([boards, posts]) => { setBoard(boards.find((b) => b.id === id)); setPage(posts); }).catch((e) => setError(messageOf(e))).finally(() => setLoading(false)); }, [id, current]);
-  useEffect(load, [load]); const meta = page ? pageMeta(page) : null;
+  const [board, setBoard] = useState<Board>(); const [posts, setPosts] = useState<PostListItem[]>([]); const [cursor, setCursor] = useState<{ lastCreatedAt: string | null; lastId: number | null }>({ lastCreatedAt: null, lastId: null }); const [hasNext, setHasNext] = useState(true); const [loading, setLoading] = useState(true); const [loadingMore, setLoadingMore] = useState(false); const [error, setError] = useState(''); const sentinelRef = useRef<HTMLDivElement>(null); const requestInFlight = useRef(false);
+  const fetchPosts = useCallback(async (reset = false) => {
+    if (requestInFlight.current || (!reset && !hasNext)) return;
+    requestInFlight.current = true; reset ? setLoading(true) : setLoadingMore(true); setError('');
+    try {
+      const result = await api.postsByCursor(id, reset ? null : cursor.lastCreatedAt, reset ? null : cursor.lastId);
+      setPosts((current) => reset ? result.items : [...current, ...result.items.filter((item) => !current.some((post) => post.id === item.id))]);
+      setCursor({ lastCreatedAt: result.lastCreatedAt, lastId: result.lastId }); setHasNext(result.hasNext);
+    } catch (e) { setError(messageOf(e)); }
+    finally { requestInFlight.current = false; setLoading(false); setLoadingMore(false); }
+  }, [id, cursor.lastCreatedAt, cursor.lastId, hasNext]);
+  const load = useCallback(() => { setPosts([]); setCursor({ lastCreatedAt: null, lastId: null }); setHasNext(true); api.boards().then((boards) => setBoard(boards.find((b) => b.id === id))).catch((e) => setError(messageOf(e))); void fetchPosts(true); }, [id, fetchPosts]);
+  useEffect(() => { load(); }, [id]);
+  useEffect(() => { const sentinel = sentinelRef.current; if (!sentinel || !hasNext || loading) return; const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) void fetchPosts(); }, { rootMargin: '300px' }); observer.observe(sentinel); return () => observer.disconnect(); }, [fetchPosts, hasNext, loading]);
   return <div className="page narrow"><div className="page-banner"><div><Link to="/" className="back-link">← 모든 게시판</Link><p className="eyebrow green">BOARD</p><h1>{board?.name || '게시판'}</h1><p>{board?.description || '함께 나누고 싶은 이야기를 올려주세요.'}</p></div>{user && <Link className="button accent" to={`/boards/${id}/new`}><Icon name="write"/>글쓰기</Link>}</div>
-    <PageState loading={loading} error={error} empty={!loading && !error && !page?.content.length ? '아직 작성된 글이 없습니다' : undefined} onRetry={load}><div className="post-list">{page?.content.map((post) => <PostRow post={post} key={post.id}/>)}</div></PageState>
-    {meta && meta.totalPages > 1 && <Pagination current={meta.number} total={meta.totalPages} onChange={setCurrent}/>}</div>;
-}
-
-function Pagination({ current, total, onChange }: { current: number; total: number; onChange: (page: number) => void }) {
-  return <nav className="pagination" aria-label="페이지 이동"><button disabled={current === 0} onClick={() => onChange(current - 1)}>←</button>{Array.from({ length: total }, (_, i) => <button className={current === i ? 'active' : ''} onClick={() => onChange(i)} key={i}>{i + 1}</button>)}<button disabled={current + 1 >= total} onClick={() => onChange(current + 1)}>→</button></nav>;
+    <PageState loading={loading} error={!posts.length ? error : ''} empty={!loading && !error && !posts.length ? '아직 작성된 글이 없습니다' : undefined} onRetry={load}><div className="post-list">{posts.map((post) => <Link className="post-row" to={`/posts/${post.id}`} key={post.id}><div><h3>{post.title}</h3><div className="meta"><span>{post.author}</span><i/><span>{formatDate(post.createdAt)}</span><i/><span><Icon name="eye" size={15}/>{post.viewCount}</span></div></div>{post.thumbnailUrl && <img src={imageUrl(post.thumbnailUrl)} alt=""/>}<Icon name="arrow"/></Link>)}</div></PageState>
+    {error && posts.length > 0 && <div className="infinite-status error-state"><p>{error}</p><button className="button outline compact" onClick={() => void fetchPosts()}>다시 시도</button></div>}
+    {loadingMore && <div className="infinite-status"><span className="spinner"/><p>더 불러오는 중입니다</p></div>}
+    {!loading && hasNext && <div ref={sentinelRef} className="scroll-sentinel" aria-hidden="true"/>}
+    {!loading && !hasNext && posts.length > 0 && <p className="infinite-end">모든 게시글을 불러왔습니다.</p>}</div>;
 }
 
 function PostDetailPage() {

@@ -37,6 +37,12 @@ footer { max-width:1120px; margin:auto; padding:35px 0; display:flex; justify-co
 
 @media (prefers-reduced-motion:reduce) { *,*:before,*:after { scroll-behavior:auto!important; animation-duration:.01ms!important; transition-duration:.01ms!important; } }
 
+.scroll-sentinel { height:1px; }
+.infinite-status { min-height:90px; display:flex; align-items:center; justify-content:center; gap:12px; color:var(--muted); font-size:12px; }
+.infinite-status .spinner { flex:none; }
+.infinite-status.error-state { flex-direction:column; }
+.infinite-end { margin:32px 0 0; color:var(--muted); text-align:center; font-size:12px; }
+
 /* 첨부 이미지의 원본 비율을 유지하고 프레임 안에서 잘리지 않게 표시한다. */
 .post-row>img {
   object-fit:contain;

@@ -103,8 +103,8 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostDTO> findByBoardId(Long boardId, Pageable pageable) {
-//        Board board = boardRepository.findById(boardId)
-//                .orElseThrow(()-> new NotFoundException(ErrorCode.BOARD_NOT_FOUND));
+        Board board = boardRepository.findById(boardId)
+               .orElseThrow(()-> new NotFoundException(ErrorCode.BOARD_NOT_FOUND));
 
         return postRepository.findByBoardId(boardId, pageable).map(Post::toDTO);
     }

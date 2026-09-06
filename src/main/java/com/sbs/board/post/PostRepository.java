@@ -47,4 +47,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         @Param("lastId") Long lastId,
         Limit limit
     );
+
+    @Query("select p.id from Post p where p.board.id =:boardId")
+    Page<Long> findIdsByBoardId(@Param("boardId") Long boardId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"board","author"})
+    List<Post> findByBoardAndAuthorByIdIn(List<Long> ids);
 }
