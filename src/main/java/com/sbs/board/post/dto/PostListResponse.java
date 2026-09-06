@@ -27,7 +27,7 @@ public class PostListResponse {
     private LocalDateTime createdAt;
     
     public static PostListResponse from(Post post){
-        String thumbnail = post.getImages()
+        String thumbnailUrl = post.getImages()
                 .stream().findFirst()
                 .map(PostImage::getStoredName)
                 .map(name-> PostImage.URL_PREFIX +name)
@@ -38,7 +38,7 @@ public class PostListResponse {
                 post.getTitle(), 
                 post.getAuthor().getNickName(),
                 post.getViewCount(),
-                thumbnail,
+                thumbnailUrl,
                 post.getCreatedAt()
         );
     }
