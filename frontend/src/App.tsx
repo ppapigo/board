@@ -102,7 +102,7 @@ function PostRow({ post }: { post: Post }) {
 
 function BoardPage() {
   const { boardId } = useParams(); const id = Number(boardId); const { user } = useAuth();
-  const [board, setBoard] = useState<Board>(); const [posts, setPosts] = useState<PostListItem[]>([]); const [hasNext, setHasNext] = useState(true); const [loading, setLoading] = useState(true); const [loadingMore, setLoadingMore] = useState(false); const [error, setError] = useState('');
+  const [board, setBoard] = useState<Board>(); const [posts, setPosts] = useState<PostListItem[]>([]); const [currentPage, setCurrentPage] = useState(0); const [totalPages, setTotalPages] = useState(0); const [hasNext, setHasNext] = useState(true); const [loading, setLoading] = useState(true); const [loadingMore, setLoadingMore] = useState(false); const [error, setError] = useState('');
   const sentinelRef = useRef<HTMLDivElement>(null); const loadingRef = useRef(false); const nextPageRef = useRef(0); const generationRef = useRef(0);
   const loadPage = useCallback(async (pageNumber: number, reset = false) => {
     if (loadingRef.current) return;
@@ -112,12 +112,12 @@ function BoardPage() {
       const result = await api.pagedPosts(id, pageNumber); const meta = pageMeta(result);
       if (generation !== generationRef.current) return;
       setPosts((current) => reset ? result.content : [...current, ...result.content.filter((item) => !current.some((post) => post.id === item.id))]);
-      nextPageRef.current = meta.number + 1; setHasNext(nextPageRef.current < meta.totalPages);
+      setCurrentPage(meta.number); setTotalPages(meta.totalPages); nextPageRef.current = meta.number + 1; setHasNext(nextPageRef.current < meta.totalPages);
     } catch (e) { if (generation === generationRef.current) setError(messageOf(e)); }
     finally { if (generation === generationRef.current) { loadingRef.current = false; setLoading(false); setLoadingMore(false); } }
   }, [id]);
   useEffect(() => {
-    generationRef.current += 1; loadingRef.current = false; nextPageRef.current = 0; setPosts([]); setHasNext(true); setError('');
+    generationRef.current += 1; loadingRef.current = false; nextPageRef.current = 0; setPosts([]); setCurrentPage(0); setTotalPages(0); setHasNext(true); setError('');
     api.boards().then((boards) => setBoard(boards.find((b) => b.id === id))).catch((e) => setError(messageOf(e)));
     void loadPage(0, true);
   }, [id, loadPage]);
@@ -131,7 +131,13 @@ function BoardPage() {
     {error && posts.length > 0 && <div className="infinite-status error-state"><p>{error}</p><button className="button outline compact" onClick={() => void loadPage(nextPageRef.current)}>다시 시도</button></div>}
     {loadingMore && <div className="infinite-status"><span className="spinner"/><p>더 불러오는 중입니다</p></div>}
     {!loading && hasNext && <div ref={sentinelRef} className="scroll-sentinel" aria-hidden="true"/>}
-    {!loading && !hasNext && posts.length > 0 && <p className="infinite-end">모든 게시글을 불러왔습니다.</p>}</div>;
+    {!loading && !hasNext && posts.length > 0 && <p className="infinite-end">모든 게시글을 불러왔습니다.</p>}
+    {!loading && totalPages > 1 && <Pagination current={currentPage} total={totalPages} onChange={async (page) => { await loadPage(page, true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}/>}</div>;
+}
+
+function Pagination({ current, total, onChange }: { current: number; total: number; onChange: (page: number) => void | Promise<void> }) {
+  const start = Math.floor(current / 5) * 5; const pages = Array.from({ length: Math.min(5, total - start) }, (_, index) => start + index);
+  return <nav className="pagination" aria-label="페이지 이동"><button disabled={current === 0} onClick={() => void onChange(current - 1)} aria-label="이전 페이지">←</button>{pages.map((page) => <button className={current === page ? 'active' : ''} onClick={() => void onChange(page)} aria-current={current === page ? 'page' : undefined} key={page}>{page + 1}</button>)}<button disabled={current + 1 >= total} onClick={() => void onChange(current + 1)} aria-label="다음 페이지">→</button></nav>;
 }
 
 function PostDetailPage() {
