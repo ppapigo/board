@@ -24,6 +24,7 @@ function Icon({ name, size = 20 }) {
         trash: <><path d="M3 6h18M8 6V4h8v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/></>,
         edit: <><path d="M12 20h9"/><path d="m16.5 3.5 4 4L9 19l-5 1 1-5Z"/></>,
         chat: <><path d="M21 12a8 8 0 0 1-8 8H6l-4 2 1.5-5A9 9 0 1 1 21 12Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></>,
+        live: <><path d="M8.5 8.5a5 5 0 0 0 0 7M5.5 5.5a9 9 0 0 0 0 13M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/><circle cx="12" cy="12" r="2"/></>,
     };
     return <svg className="icon" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
@@ -39,6 +40,7 @@ function Layout({ children }) {
         <nav className="primary-nav" aria-label="주요 메뉴">
           <NavLink to="/" end><Icon name="home"/>홈</NavLink>
           {user && <NavLink to="/chat"><Icon name="chat"/>채팅</NavLink>}
+          {user && <NavLink to="/live"><Icon name="live"/>라이브</NavLink>}
           {user && <NavLink to="/notifications"><span className="nav-icon"><Icon name="bell"/>{unread > 0 && <b>{unread > 99 ? '99+' : unread}</b>}</span>알림</NavLink>}
           {user && <NavLink to="/me"><Icon name="user"/>내 정보</NavLink>}
         </nav>
@@ -546,6 +548,118 @@ function ChatRoomPage() {
       </div>}
     </PageState></div>;
 }
+function LiveLobbyPage() {
+    const navigate = useNavigate();
+    const [events, setEvents] = useState([]);
+    const [title, setTitle] = useState('');
+    const [code, setCode] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [creating, setCreating] = useState(false);
+    const [error, setError] = useState('');
+    const load = useCallback(() => {
+        setLoading(true);
+        api.liveEvents().then(setEvents).catch((e) => setError(messageOf(e))).finally(() => setLoading(false));
+    }, []);
+    useEffect(load, [load]);
+    const create = async (event) => {
+        event.preventDefault();
+        if (!title.trim() || creating)
+            return;
+        setCreating(true);
+        setError('');
+        try {
+            const created = await api.createLiveEvent(title.trim());
+            navigate(`/live/${created.code}`);
+        }
+        catch (e) {
+            setError(messageOf(e));
+        }
+        finally {
+            setCreating(false);
+        }
+    };
+    const join = (event) => {
+        event.preventDefault();
+        const normalized = code.trim().toUpperCase();
+        if (normalized)
+            navigate(`/live/${normalized}`);
+    };
+    return <div className="page live-page"><div className="live-hero"><div><p className="eyebrow">MOA LIVE</p><h1>질문과 투표를<br/>한곳에서 실시간으로</h1><p>참가 코드를 공유하고, 질문을 모으고, 모두의 선택을 바로 확인하세요.</p></div><form className="live-join" onSubmit={join}><label>참가 코드</label><div><input maxLength={12} value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="코드 입력"/><button className="button accent">참여하기</button></div></form></div>
+      <div className="live-lobby"><form className="live-create" onSubmit={create}><p className="eyebrow green">HOST</p><h2>새 라이브 열기</h2><label>라이브 제목<input required maxLength={100} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예: 10월 팀 타운홀"/></label>{error && <p className="form-error">{error}</p>}<button className="button dark" disabled={creating}>{creating ? '만드는 중…' : '라이브 시작'}</button></form>
+        <section><div className="section-heading"><div><p className="eyebrow green">MY LIVE</p><h2>내가 만든 라이브</h2></div><span>{events.length}개</span></div><PageState loading={loading} error={error && !events.length ? error : ''} empty={!loading && !events.length ? '아직 만든 라이브가 없습니다' : undefined} onRetry={load}><div className="live-event-list">{events.map((item) => <Link to={`/live/${item.code}`} className="live-event-card" key={item.id}><span className={`live-status ${item.status === 'OPEN' ? 'open' : ''}`}>{item.status === 'OPEN' ? '진행 중' : '종료'}</span><div><h3>{item.title}</h3><p>{formatDate(item.createdAt)} · 참가 코드 <strong>{item.code}</strong></p></div><Icon name="arrow"/></Link>)}</div></PageState></section>
+      </div>
+    </div>;
+}
+function LiveEventPage() {
+    const { code = '' } = useParams();
+    const navigate = useNavigate();
+    const [snapshot, setSnapshot] = useState();
+    const [question, setQuestion] = useState('');
+    const [pollTitle, setPollTitle] = useState('');
+    const [pollOptions, setPollOptions] = useState(['', '']);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const load = useCallback(async (quiet = false) => {
+        if (!quiet)
+            setLoading(true);
+        try {
+            setSnapshot(await api.liveEvent(code));
+            setError('');
+        }
+        catch (e) {
+            setError(messageOf(e));
+        }
+        finally {
+            if (!quiet)
+                setLoading(false);
+        }
+    }, [code]);
+    useEffect(() => { void load(); }, [load]);
+    useEffect(() => {
+        if (!snapshot || snapshot.event.status !== 'OPEN')
+            return;
+        const source = new EventSource(`/api/live/events/${encodeURIComponent(code)}/stream`);
+        const refresh = () => void load(true);
+        ['question_created', 'question_liked', 'question_deleted', 'poll.created', 'poll.voted', 'poll.closed', 'event_closed'].forEach((name) => source.addEventListener(name, refresh));
+        source.onerror = () => { if (source.readyState === EventSource.CLOSED) setError('실시간 연결이 종료되었습니다.'); };
+        return () => source.close();
+    }, [code, load, snapshot?.event.status]);
+    const ask = async (event) => {
+        event.preventDefault();
+        if (!question.trim())
+            return;
+        try {
+            await api.createLiveQuestion(code, question.trim());
+            setQuestion('');
+            await load(true);
+        }
+        catch (e) { setError(messageOf(e)); }
+    };
+    const toggleLike = async (id) => { try { await api.likeLiveQuestion(id); await load(true); } catch (e) { setError(messageOf(e)); } };
+    const removeQuestion = async (id) => { try { await api.deleteLiveQuestion(id); await load(true); } catch (e) { setError(messageOf(e)); } };
+    const createPoll = async (event) => {
+        event.preventDefault();
+        const options = pollOptions.map((item) => item.trim()).filter(Boolean);
+        if (!pollTitle.trim() || options.length < 2)
+            return;
+        try {
+            await api.createLivePoll(code, pollTitle.trim(), options);
+            setPollTitle('');
+            setPollOptions(['', '']);
+            await load(true);
+        }
+        catch (e) { setError(messageOf(e)); }
+    };
+    const vote = async (pollId, optionId) => { try { await api.voteLivePoll(pollId, optionId); await load(true); } catch (e) { setError(messageOf(e)); } };
+    const closePoll = async (id) => { try { await api.closeLivePoll(id); await load(true); } catch (e) { setError(messageOf(e)); } };
+    const closeEvent = async () => { if (!confirm('라이브를 종료할까요?')) return; try { await api.closeLiveEvent(code); await load(true); } catch (e) { setError(messageOf(e)); } };
+    const data = snapshot;
+    return <div className="page live-session"><PageState loading={loading} error={!data ? error : ''} onRetry={() => void load()}>{data && <>
+      <header className="live-session-header"><button className="back-link" onClick={() => navigate('/live')}>← 라이브 목록</button><div className="live-title-row"><div><span className={`live-status ${data.event.status === 'OPEN' ? 'open' : ''}`}>{data.event.status === 'OPEN' ? 'LIVE' : '종료됨'}</span><h1>{data.event.title}</h1><p>호스트 {data.event.hostUsername}</p></div><div className="live-code"><span>참가 코드</span><strong>{data.event.code}</strong></div>{data.event.host && data.event.status === 'OPEN' && <button className="button outline" onClick={() => void closeEvent()}>라이브 종료</button>}</div></header>
+      {error && <p className="live-error">{error}</p>}<div className="live-grid"><section className="live-questions"><div className="section-heading"><div><p className="eyebrow green">Q&amp;A</p><h2>실시간 질문</h2></div><span>{data.questions.length}개</span></div>{data.event.status === 'OPEN' && <form className="question-form" onSubmit={ask}><input maxLength={100} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="궁금한 내용을 질문해 보세요"/><button className="button dark" disabled={!question.trim()}>질문 등록</button></form>}<div className="question-list">{data.questions.length === 0 && <div className="mini-empty">아직 등록된 질문이 없습니다.</div>}{data.questions.map((item, index) => <article className="question-card" key={item.id}><span className="question-rank">{index + 1}</span><div><p>{item.content}</p><small>{item.authorUsername} · {formatDate(item.createdAt)}</small></div><button className={item.likedByMe ? 'liked' : ''} disabled={data.event.status !== 'OPEN'} onClick={() => void toggleLike(item.id)}>♥ <b>{item.likeCount}</b></button>{(item.mine || data.event.host) && <button className="question-delete" onClick={() => void removeQuestion(item.id)}>×</button>}</article>)}</div></section>
+        <aside className="live-polls"><div className="section-heading"><div><p className="eyebrow green">POLL</p><h2>실시간 투표</h2></div></div>{data.event.host && data.event.status === 'OPEN' && <form className="poll-create" onSubmit={createPoll}><input maxLength={100} value={pollTitle} onChange={(e) => setPollTitle(e.target.value)} placeholder="투표 제목"/>{pollOptions.map((option, index) => <input key={index} maxLength={50} value={option} onChange={(e) => setPollOptions((current) => current.map((item, i) => i === index ? e.target.value : item))} placeholder={`선택지 ${index + 1}`}/>)}<div>{pollOptions.length < 5 && <button type="button" className="text-button" onClick={() => setPollOptions((current) => [...current, ''])}>+ 선택지 추가</button>}<button className="button accent compact" disabled={!pollTitle.trim() || pollOptions.filter((item) => item.trim()).length < 2}>투표 만들기</button></div></form>}<div className="poll-list">{data.polls.length === 0 && <div className="mini-empty">진행 중인 투표가 없습니다.</div>}{data.polls.map((poll) => <article className="poll-card" key={poll.id}><div className="poll-card-title"><h3>{poll.title}</h3><span>{poll.totalVotes}명 참여</span></div>{poll.options.map((option) => { const percent = poll.totalVotes ? Math.round(option.count * 100 / poll.totalVotes) : 0; return <button className={poll.myOptionId === option.id ? 'selected' : ''} disabled={poll.status !== 'OPEN' || Boolean(poll.myOptionId)} onClick={() => void vote(poll.id, option.id)} key={option.id}><span className="poll-fill" style={{ width: `${percent}%` }}/><span>{option.text}</span><b>{option.count} · {percent}%</b></button>; })}{data.event.host && poll.status === 'OPEN' && <button className="text-button close-poll" onClick={() => void closePoll(poll.id)}>투표 마감</button>}</article>)}</div></aside></div>
+    </>}</PageState></div>;
+}
 function Protected({ children, admin = false }) {
     const { user, restoring } = useAuth();
     const location = useLocation();
@@ -566,6 +680,7 @@ export default function App() {
       <Route path="/boards/:boardId/new" element={<Protected><PostEditorPage /></Protected>}/><Route path="/posts/:postId/edit" element={<Protected><PostEditorPage edit/></Protected>}/>
       <Route path="/notifications" element={<Protected><NotificationsPage /></Protected>}/><Route path="/me" element={<Protected><ProfilePage /></Protected>}/><Route path="/admin/boards" element={<Protected admin><AdminBoardsPage /></Protected>}/>
       <Route path="/chat" element={<Protected><ChatRoomsPage /></Protected>}/><Route path="/chat/:roomId" element={<Protected><ChatRoomPage /></Protected>}/>
+      <Route path="/live" element={<Protected><LiveLobbyPage /></Protected>}/><Route path="/live/:code" element={<Protected><LiveEventPage /></Protected>}/>
       <Route path="*" element={<NotFoundPage />}/>
     </Routes></Layout>}/>
   </Routes>;
