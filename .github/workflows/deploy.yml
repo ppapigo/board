@@ -21,6 +21,13 @@ jobs:
       - name: 소스 체크아웃
         uses: actions/checkout@v4
 
+      - name: chat 소스 체크아웃
+        uses: actions/checkout@v4
+        with:
+          repository: ppapigo/chat
+          ref: main
+          path: chat-source
+
       - name: JDK21 설치 (temurin)
         uses: actions/setup-java@v5
         with:
@@ -46,6 +53,15 @@ jobs:
           tags: ghcr.io/ppapigo/board-app:latest
           cache-from: type=gha,scope=app
           cache-to: type=gha,mode=max,scope=app
+
+      - name: chat 이미지 빌드
+        uses: docker/build-push-action@v6
+        with:
+          context: ./chat-source
+          push: true
+          tags: ghcr.io/ppapigo/chat-app:latest
+          cache-from: type=gha,scope=chat
+          cache-to: type=gha,mode=max,scope=chat
 
       - name: react front-end 이미지 빌드
         uses: docker/build-push-action@v6
