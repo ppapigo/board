@@ -5,26 +5,23 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint ."
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.3.0",
     "@vitejs/plugin-react": "latest",
     "react": "latest",
     "react-dom": "latest",
     "react-router-dom": "latest",
-    "typescript": "latest",
     "vite": "latest"
   },
   "devDependencies": {
     "@eslint/js": "latest",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "latest",
     "eslint": "latest",
     "eslint-plugin-react-hooks": "latest",
     "eslint-plugin-react-refresh": "latest",
-    "globals": "latest",
-    "typescript-eslint": "latest"
+    "globals": "latest"
   }
 }
