@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -euo pipefail
 
 required_envs=(
@@ -9,6 +10,8 @@ required_envs=(
   DB_NAME
   DB_USERNAME
   DB_PASSWORD
+  GHCR_USER
+  GHCR_TOKEN
 )
 
 missing_envs=()
@@ -49,7 +52,6 @@ DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 SITE_ADDRESS=board.grooverapp.com
 APP_REFRESH_COOKIE=true
-JWT_SECRET=${JWT_SECRET}
 EOF
 chmod 600 .env
 

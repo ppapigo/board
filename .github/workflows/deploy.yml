@@ -84,7 +84,7 @@ jobs:
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           command_timeout: 30m
-          envs: KAKAO_REST_API,KAKAO_SECRET,KAKAO_CALLBACK,APP_PUBLIC_BASE_URL,JWT_SECRET,DEPLOY_HOST,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,DB_NAME,DB_USERNAME,DB_PASSWORD, GHCR_USER,GHCR_TOKEN
+          envs: KAKAO_REST_API,KAKAO_SECRET,KAKAO_CALLBACK,APP_PUBLIC_BASE_URL,JWT_SECRET,DEPLOY_HOST,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,DB_NAME,DB_USERNAME,DB_PASSWORD,GHCR_USER,GHCR_TOKEN
           script: |
             set -e
             [ -d ~/board/.git ] || git clone https://github.com/ppapigo/board.git ~/board

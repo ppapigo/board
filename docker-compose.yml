@@ -13,6 +13,12 @@ services:
     environment:
       DB_NAME: ${DB_NAME}
       APP_WS_ALLOWED_ORIGINS: https://board.grooverapp.com, http://localhost, http://localhost:*
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8092/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
   app:
     build:
       context: .
