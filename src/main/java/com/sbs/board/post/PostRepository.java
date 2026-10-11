@@ -48,6 +48,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         Limit limit
     );
 
+    // FullText Index
+
     @Query("select p.id from Post p where p.board.id =:boardId")
     Page<Long> findIdsByBoardId(@Param("boardId") Long boardId, Pageable pageable);
 

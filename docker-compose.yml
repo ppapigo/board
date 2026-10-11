@@ -1,5 +1,18 @@
 name: board
+include:
+  - path:
+      - ../chat/docker-compose.yml
+    env_file:
+      - ../chat/.env
+
 services:
+  chat-app:
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      DB_NAME: ${DB_NAME}
+      APP_WS_ALLOWED_ORIGINS: https://board.grooverapp.com, http://localhost, http://localhost:*
   app:
     build:
       context: .

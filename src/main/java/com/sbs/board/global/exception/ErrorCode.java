@@ -12,9 +12,15 @@ public enum ErrorCode {
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시판을 찾을 수 없습니다."),
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다"),
+    LIVE_EVENT_NOT_FOUND(HttpStatus.NOT_FOUND,"라이브 이벤트를 찾을 수 없습니다"),
+    QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND,"질문을 찾을 수 없습니다"),
+    POLL_NOT_FOUND(HttpStatus.NOT_FOUND,"투표를 찾을 수 없습니다."),
+    POLL_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND,"투표옵션을 찾을 수 없습니다."),
 
     DUPLICATE_USER_EMAIL(HttpStatus.CONFLICT, "이미 사용중인 이메일입니다."),
     DUPLICATE_BOARD_NAME(HttpStatus.CONFLICT, "이미 존재하는 게시판입니다."),
+    POLL_CLOSED(HttpStatus.CONFLICT, "마감된 투표입니다."),
+    ALREADY_VOTED(HttpStatus.CONFLICT, "이미 투표했습니다."),
 
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "권한이 없습니다."),
     POST_ACCESS_DENIED(HttpStatus.FORBIDDEN, "게시글을 작성할 권한이 없습니다."),
@@ -27,6 +33,8 @@ public enum ErrorCode {
     INVALID_OAUTH_STATE(HttpStatus.UNAUTHORIZED, "정상적인 인증 요청이 아닙니다."),
     EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 refresh token입니다.다시 로그인하세요"),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "잘못된 refresh token입니다."),
+
+    LIVE_EVENT_CLOSED(HttpStatus.CONFLICT,"완료된 라이브 이벤트 입니다"),
 
     INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST,"지원하지 않는 파일 형식입니다"),
     INVALID_FILE_UPLOAD_DIR(HttpStatus.INTERNAL_SERVER_ERROR,"파일 업로드 디렉토리 실패"),
