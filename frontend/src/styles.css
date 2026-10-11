@@ -116,6 +116,7 @@ footer { max-width:1120px; margin:auto; padding:35px 0; display:flex; justify-co
 .message-form { padding:14px; display:flex; gap:10px; border-top:1px solid var(--line); }
 .message-form input { flex:1; min-width:0; padding:12px 15px; border:1px solid var(--line); border-radius:8px; font:inherit; }
 .message-form .button { min-width:82px; justify-content:center; }
+.mobile-room-exit { display:none; padding:7px 10px; color:#9e543a; border:1px solid #e4c7bc; border-radius:7px; background:#fff7f4; font:inherit; font-size:10px; cursor:pointer; }
 
 @media (max-width:720px) {
   .chat-page,.chat-room-page { width:calc(100% - 24px); }
@@ -124,6 +125,7 @@ footer { max-width:1120px; margin:auto; padding:35px 0; display:flex; justify-co
   .chat-room-grid { grid-template-columns:1fr; }
   .chat-room-header { padding:18px; }
   .chat-room-header>div { align-items:flex-start; flex-direction:column; }
+  .chat-room-header>div>.connection-state { display:inline-flex; }.mobile-room-exit { display:inline-block; }
   .chat-columns { min-height:0; grid-template-columns:1fr; }
   .member-panel { display:none; }
   .message-list { height:calc(100vh - 315px); min-height:390px; padding:18px 14px; }

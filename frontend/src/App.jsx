@@ -536,12 +536,25 @@ function ChatRoomPage() {
         setContent('');
     };
     const leave = async () => {
-        await api.leaveChatRoom(id);
-        navigate('/chat');
+        const owner = room?.ownerUsername === user?.email;
+        const message = owner ? '방장이 나가면 채팅방과 모든 메시지가 삭제됩니다. 삭제할까요?' : '채팅방에서 나갈까요?';
+        if (!confirm(message))
+            return;
+        setError('');
+        try {
+            if (owner)
+                await api.deleteChatRoom(id);
+            else
+                await api.leaveChatRoom(id);
+            navigate('/chat', { replace: true });
+        }
+        catch (e) {
+            setError(messageOf(e));
+        }
     };
     return <div className="page chat-room-page"><PageState loading={loading} error={error && !room ? error : ''} onRetry={() => window.location.reload()}>
-      {room && <div className="chat-shell"><header className="chat-room-header"><Link to="/chat" className="back-link">← 채팅방 목록</Link><div><div><h1>{room.name}</h1><p>{room.description}</p></div><div className={`connection-state ${connected ? 'online' : ''}`}><span/>{connected ? '실시간 연결됨' : '연결 중'}</div></div></header>
-        <div className="chat-columns"><aside className="member-panel"><h2>참여자 <em>{members.length}</em></h2>{members.map((member) => <div className="member-row" key={member.userId}><span className="avatar small-avatar">{member.email.slice(0, 1).toUpperCase()}</span><div><strong>{member.email}</strong><small className={member.online ? 'online' : ''}>{member.online ? '접속 중' : '오프라인'}</small></div></div>)}<button className="button ghost compact" onClick={() => void leave()}>채팅방 나가기</button></aside>
+      {room && <div className="chat-shell"><header className="chat-room-header"><Link to="/chat" className="back-link">← 채팅방 목록</Link><div><div><h1>{room.name}</h1><p>{room.description}</p></div><div className={`connection-state ${connected ? 'online' : ''}`}><span/>{connected ? '실시간 연결됨' : '연결 중'}</div><button className="mobile-room-exit" onClick={() => void leave()}>{room.ownerUsername === user?.email ? '삭제' : '나가기'}</button></div></header>
+        <div className="chat-columns"><aside className="member-panel"><h2>참여자 <em>{members.length}</em></h2>{members.map((member) => <div className="member-row" key={member.userId}><span className="avatar small-avatar">{member.email.slice(0, 1).toUpperCase()}</span><div><strong>{member.email}</strong><small className={member.online ? 'online' : ''}>{member.online ? '접속 중' : '오프라인'}</small></div></div>)}<button className="button ghost compact" onClick={() => void leave()}>{room.ownerUsername === user?.email ? '채팅방 삭제' : '채팅방 나가기'}</button></aside>
           <section className="message-panel"><div className="message-list">{messages.length === 0 && <div className="chat-empty"><Icon name="chat" size={34}/><p>첫 메시지를 보내 대화를 시작해보세요.</p></div>}{messages.map((message) => message.type === 'TALK' ? <div className={`message ${message.senderUserId === user?.id ? 'mine' : ''}`} key={message.id}><div className="message-meta"><strong>{message.senderEmail}</strong><span>{formatDate(message.createdAt)}</span></div><p>{message.content}</p></div> : <div className="system-message" key={message.id}>{message.content}</div>)}<div ref={endRef}/></div>
             {error && <p className="chat-error">{error}</p>}<form className="message-form" onSubmit={send}><input maxLength={1000} value={content} onChange={(e) => setContent(e.target.value)} placeholder={connected ? '메시지를 입력하세요' : '서버에 연결하는 중입니다'} disabled={!connected}/><button className="button dark" disabled={!connected || !content.trim()}>보내기</button></form></section>
         </div>
