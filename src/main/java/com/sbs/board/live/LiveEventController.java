@@ -45,7 +45,7 @@ public class LiveEventController {
         return liveEventService.getSnapshot(code, userDetails.getId());
     }
 
-    @PreAuthorize("@liveSecurity.isHost(#code, authentication.principal")
+    @PreAuthorize("@liveSecurity.isHost(#code, authentication.principal)")
     @PostMapping("/events/{code}/close")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void close(@PathVariable String code){

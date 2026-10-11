@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class LivePollController {
     private final LivePollService livePollService;
 
-    @PreAuthorize("@liveSecurity.isHost(#code, authentication.principal")
+    @PreAuthorize("@liveSecurity.isHost(#code, authentication.principal)")
     @PostMapping("/events/{code}/polls")
     @ResponseStatus(HttpStatus.CREATED)
     public PollResponse create(
@@ -36,7 +36,7 @@ public class LivePollController {
         return livePollService.vote(id, request.optionId(), userDetails.getId());
     }
 
-    @PreAuthorize("@liveSecurity.isPollHost(#id, authentication.principal")
+    @PreAuthorize("@liveSecurity.isPollHost(#id, authentication.principal)")
     @PostMapping("/polls/{id}/close")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void close(@PathVariable Long id){
