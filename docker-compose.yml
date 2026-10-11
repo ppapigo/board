@@ -1,24 +1,34 @@
 name: board
-include:
-  - path:
-      - ../chat/docker-compose.yml
-    env_file:
-      - ../chat/.env
 
 services:
   chat-app:
+    image: ghcr.io/ppapigo/chat-app:latest
+    container_name: chat-app
     depends_on:
       redis:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
-      DB_NAME: ${DB_NAME}
+      DB_HOST: ${DB_HOST:-mysql8}
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-board}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TZ: Asia/Seoul
+      APP_BOARD_SCHEMA: ${DB_NAME:-board}
       APP_WS_ALLOWED_ORIGINS: https://board.grooverapp.com, http://localhost, http://localhost:*
+    networks:
+      - board-net
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8092/"]
       interval: 10s
       timeout: 5s
       retries: 12
       start_period: 40s
+    restart: unless-stopped
   app:
     build:
       context: .

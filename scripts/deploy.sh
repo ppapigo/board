@@ -55,16 +55,6 @@ APP_REFRESH_COOKIE=true
 EOF
 chmod 600 .env
 
-echo  "chat 스택 준비"
-[ -d ~/chat/.git ] || git clone https://github.com/ppapigo/chat.git ~/chat
-git -C ~/chat fetch --all && git -C ~/chat reset --hard origin/main
-cat > ~/chat/.env << EOF
-JWT_SECRET=${JWT_SECRET}
-DB_NAME=${DB_NAME}
-DB_USERNAME=${DB_USERNAME}
-DB_PASSWORD=${DB_PASSWORD}
-EOF
-
 echo "mysql8준비 및 도커 네트워크 생성"
 docker network create board-net 2>/dev/null || true
 docker start mysql8 2>/dev/null || docker run -d --name mysql8 \
