@@ -72,6 +72,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/api/post/**").permitAll()
                             .requestMatchers(HttpMethod.GET, "/api/comment/**").permitAll()
                             .requestMatchers(HttpMethod.GET,"/images/**").permitAll()
+                            .requestMatchers(HttpMethod.GET,"/api/live/events/*/stream").permitAll()
                     // 인증이되어야 요청가능
                     .requestMatchers(HttpMethod.GET, "/api/user/me").authenticated()
                     // ADMIN권한이 있어야 요청가능
