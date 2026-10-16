@@ -4,9 +4,11 @@ import com.sbs.board.global.entity.User;
 import com.sbs.board.global.exception.BusinessException;
 import com.sbs.board.global.exception.ErrorCode;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -19,6 +21,7 @@ import java.util.Objects;
 @Table(name = "live_events",indexes = @Index(name = "idx_live_event_host", columnList = "host_id"))
 @Getter
 @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Setter
 public class LiveEvent {
@@ -39,7 +42,8 @@ public class LiveEvent {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false,length = 10)
-    private LiveStatus status;
+    @Builder.Default
+    private LiveStatus status = LiveStatus.OPEN;
 
     @Column(name="created_at")
     @Builder.Default
@@ -51,6 +55,7 @@ public class LiveEvent {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public LiveEvent(User host, String title, String code){
+        this();
         this.host=host;
         this.title=title;
         this.code=code;

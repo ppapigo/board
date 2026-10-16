@@ -23,7 +23,4 @@ public class SignupRequest {
     @NotBlank
     @JsonProperty("nick_name")
     private String nickName;
-
-    @NotBlank
-    private String role;
 }

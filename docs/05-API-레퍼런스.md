@@ -40,14 +40,22 @@ Authorization: Bearer <JWT>
 | POST | `/api/auth/reissue` | refresh cookie 필수 | 200 `TokenResponse` |
 
 ```ts
-interface SignupRequest { email: string; password: string; nick_name: string; role: string }
+interface SignupRequest { email: string; password: string; nick_name: string }
 interface LoginRequest { email: string; password: string }
 interface UserResponse { id: number; email: string; nickName: string; accessToken: string; refreshToken: string; role: string | null }
 interface TokenResponse { accessToken: string; refreshToken: string }
 interface IngestResult { status: string; message: string | null }
 ```
 
-검증: 로그인 password 최소 8자, 회원가입 password 8~30자, 모든 필드 non-blank. 현재 회원가입 `role`은 `"ADMIN"`일 때 관리자, 그 외 사용자로 저장된다.
+검증: 로그인 password 최소 8자, 회원가입 password 8~30자, 모든 필드 non-blank. 공개 회원가입은 서버에서 항상 `USER`로 저장한다. 요청에 `role`을 추가해도 무시되며 권한을 지정할 수 없다.
+
+## 관리자 권한 부여
+
+| Method | Path | 권한 | 입력/성공 |
+|---|---|---|---|
+| PUT | `/api/admin/users/{userId}/admin` | ADMIN | body 없음 → 204 empty |
+
+기존 관리자만 사용자를 `ADMIN`으로 승격할 수 있다. 이미 관리자이면 204를 반환한다. 미인증 요청은 401, 일반 사용자는 403, 대상 사용자가 없으면 404 `USER_NOT_FOUND`다. 최초 관리자 설정은 접근이 통제된 운영 DB 관리 절차로 수행한다.
 
 ## OAuth
 

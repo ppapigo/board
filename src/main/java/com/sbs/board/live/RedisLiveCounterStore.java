@@ -21,9 +21,9 @@ public class RedisLiveCounterStore implements LiveCounterStore{
     static final long TTL_SECONDS = Duration.ofDays(7).toSeconds();
 
     private static final String TOGGLE_LIKE = """
-            local like
+            local liked
             local score
-            if redis.call('SADD',KEYS[1], ARGV[1]) == i then
+            if redis.call('SADD',KEYS[1], ARGV[1]) == 1 then
                 liked = 1
                 score = redis.call('ZINCRBY', KEYS[2], 1, ARGV[1])
             else
@@ -37,7 +37,7 @@ public class RedisLiveCounterStore implements LiveCounterStore{
             """;
 
     private static final String VOTE_SCR = """
-         if redis.call('HSETNX', KEYS[1], ARGV[1], ARGV[2]) === 0 then
+         if redis.call('HSETNX', KEYS[1], ARGV[1], ARGV[2]) == 0 then
             return 0
          end
          redis.call('HINCRBY', KEYS[2], ARGV[2], 1)

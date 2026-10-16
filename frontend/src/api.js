@@ -81,7 +81,7 @@ async function request(path, init = {}, retry = true) {
 export const api = {
     restore: refreshAccessToken,
     signup: (email, password, nickName) => request('/api/auth/signup', {
-        method: 'POST', body: JSON.stringify({ email, password, nick_name: nickName, role: 'USER' }),
+        method: 'POST', body: JSON.stringify({ email, password, nick_name: nickName }),
     }),
     login: (email, password) => request('/api/auth/login', {
         method: 'POST', body: JSON.stringify({ email, password }),
