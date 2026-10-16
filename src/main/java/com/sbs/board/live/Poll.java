@@ -36,10 +36,12 @@ public class Poll {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false, length = 10)
-    private LiveStatus status;
+    @Builder.Default
+    private LiveStatus status = LiveStatus.OPEN;
 
     @OneToMany(mappedBy = "poll", cascade = CascadeType.ALL,orphanRemoval = true)
     @OrderBy("sortOrder Desc")
+    @Builder.Default
     private List<PollOption> options = new ArrayList<>();
 
     @Column(name="created_at")
@@ -52,6 +54,7 @@ public class Poll {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public Poll(LiveEvent event,String title, List<String> optionTexts){
+        this();
         this.event =event;
         this.title= title;
         for(int i=0; i<optionTexts.size();i++){

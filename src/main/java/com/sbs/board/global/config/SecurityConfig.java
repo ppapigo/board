@@ -65,6 +65,7 @@ public class SecurityConfig {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // JWT 처리
 
             .authorizeHttpRequests(auth-> auth
+                    .requestMatchers("/api/admin/**").hasRole(User.Role.ADMIN.name())
                     // 공개: 인증/회워가입/로그아웃/게시판의 게시글 조회
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/oauth/**").permitAll()
