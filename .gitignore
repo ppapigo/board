@@ -39,4 +39,4 @@ out/
 # configuration
 .env
 .prod.env
-.env
+.ssh
