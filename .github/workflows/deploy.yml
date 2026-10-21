@@ -1,110 +1,74 @@
-name: Deploy to Lightsail Board server
+name: Deploy MOA independently
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch: #재 배포를 위한 수동 트리거 버튼 추가
-
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
   packages: write
-
-#병렬 처리 여부
 concurrency:
-  group: deploy-lightsail
-  cancel-in-progress: true #다른 작업이 들어오면 이 작업을 취소함
-
-
+  group: moa-production
+  cancel-in-progress: false
 jobs:
-  build:
+  images:
     runs-on: ubuntu-latest
     steps:
-      - name: 소스 체크아웃
-        uses: actions/checkout@v4
-
-      - name: chat 소스 체크아웃
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           repository: ppapigo/chat
           ref: main
           path: chat-source
-
-      - name: JDK21 설치 (temurin)
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
-      - name: Buildx 설정(GHA 캐시 사용을 위해)
-        uses: docker/setup-buildx-action@v3
-
-      - name: GHCR 로그인
-        uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 백엔드 이미지 빌드
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/ppapigo/board-app:latest
-          cache-from: type=gha,scope=app
-          cache-to: type=gha,mode=max,scope=app
-
-      - name: chat 이미지 빌드
-        uses: docker/build-push-action@v6
-        with:
-          context: ./chat-source
-          push: true
-          tags: ghcr.io/ppapigo/chat-app:latest
-          cache-from: type=gha,scope=chat
-          cache-to: type=gha,mode=max,scope=chat
-
-      - name: react front-end 이미지 빌드
-        uses: docker/build-push-action@v6
+          tags: ghcr.io/ppapigo/board-app:${{ github.sha }}
+      - uses: docker/build-push-action@v6
         with:
           context: ./frontend
           push: true
-          tags: ghcr.io/ppapigo/board-frontend:latest
-          cache-from: type=gha,scope=fer
-          cache-to: type=gha,mode=max,scope=fer
-
-
+          tags: ghcr.io/ppapigo/board-frontend:${{ github.sha }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./chat-source
+          push: true
+          tags: ghcr.io/ppapigo/chat-app:${{ github.sha }}
   deploy:
-    needs: build
+    needs: images
     runs-on: ubuntu-latest
+    environment: production
     steps:
-      - name: Lightsail SSH 접속후 배포
-        uses: appleboy/ssh-action@v1.2.0
-
-        env:
-          KAKAO_REST_API: ${{ secrets.KAKAO_REST_API }}
-          KAKAO_SECRET: ${{ secrets.KAKAO_SECRET }}
-          KAKAO_CALLBACK: ${{ secrets.KAKAO_CALLBACK }}
-          APP_PUBLIC_BASE_URL: ${{ secrets.APP_PUBLIC_BASE_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          DEPLOY_HOST: ${{ secrets.LIGHTSAIL_HOST }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          GHCR_USER: ${{ github.actor }}
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - uses: actions/checkout@v4
+      - name: Stage deploy files (do not modify Caddyfile)
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          source: docker-compose.yml,scripts/deploy.sh
+          target: /home/${{ secrets.LIGHTSAIL_USER }}/board/.deploy/incoming
+      - name: Deploy MOA services only
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          BOARD_IMAGE_TAG: ${{ github.sha }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          envs: BOARD_IMAGE_TAG,GHCR_USER,GHCR_TOKEN
           command_timeout: 30m
-          envs: KAKAO_REST_API,KAKAO_SECRET,KAKAO_CALLBACK,APP_PUBLIC_BASE_URL,JWT_SECRET,DEPLOY_HOST,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,DB_NAME,DB_USERNAME,DB_PASSWORD,GHCR_USER,GHCR_TOKEN
           script: |
-            set -e
-            [ -d ~/board/.git ] || git clone https://github.com/ppapigo/board.git ~/board
-            cd ~/board
-            git fetch --all && git reset --hard origin/main
-            chmod +x ./scripts/deploy.sh
-            ./scripts/deploy.sh
+            set -eu
+            cd "$HOME/board"
+            mv .deploy/incoming/docker-compose.yml .deploy/docker-compose.yml
+            chmod +x .deploy/incoming/scripts/deploy.sh
+            bash .deploy/incoming/scripts/deploy.sh
