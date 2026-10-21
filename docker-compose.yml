@@ -2,7 +2,7 @@ name: board
 
 services:
   chat-app:
-    image: ghcr.io/ppapigo/chat-app:latest
+    image: ghcr.io/ppapigo/chat-app:${BOARD_IMAGE_TAG:-latest}
     container_name: chat-app
     depends_on:
       redis:
@@ -34,7 +34,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    image: ghcr.io/ppapigo/board-app:latest #board:latest
+    image: ghcr.io/ppapigo/board-app:${BOARD_IMAGE_TAG:-latest} #board:latest
 
     container_name: board-back-end
     depends_on:
@@ -84,7 +84,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: ghcr.io/ppapigo/board-frontend:latest #board-fe-react
+    image: ghcr.io/ppapigo/board-frontend:${BOARD_IMAGE_TAG:-latest} #board-fe-react
     container_name: board-fe-react
     #board-fe-react 가동 조건
     depends_on:
