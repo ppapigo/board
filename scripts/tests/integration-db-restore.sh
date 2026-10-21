@@ -12,11 +12,20 @@ cleanup() {
 trap cleanup EXIT
 
 docker run -d --name "$mysql_name" -e MYSQL_ROOT_PASSWORD=ci_disposable_password_only -e MYSQL_DATABASE=ci_restore mysql:8.4 >/dev/null
-for i in $(seq 1 60); do
-  if docker exec "$mysql_name" mysqladmin ping -uroot -pci_disposable_password_only --silent >/dev/null 2>&1; then break; fi
+mysql_ready=0
+for i in $(seq 1 90); do
+  if docker exec "$mysql_name" mysql -uroot -pci_disposable_password_only -D ci_restore -Nse 'SELECT 1' >/dev/null 2>&1; then
+    mysql_ready=1
+    break
+  fi
   sleep 2
 done
-docker exec "$mysql_name" mysql -uroot -pci_disposable_password_only -D ci_restore -e 'CREATE TABLE restore_probe (id INT PRIMARY KEY, value_text VARCHAR(64)); INSERT INTO restore_probe VALUES (1, "persisted_mysql");' 2>/dev/null
+if (( mysql_ready != 1 )); then
+  echo "MySQL database was not ready" >&2
+  docker logs --tail 40 "$mysql_name" >&2
+  exit 1
+fi
+docker exec "$mysql_name" mysql -uroot -pci_disposable_password_only -D ci_restore -e "CREATE TABLE restore_probe (id INT PRIMARY KEY, value_text VARCHAR(64)); INSERT INTO restore_probe VALUES (1, 'persisted_mysql');" 2>/dev/null
 docker exec "$mysql_name" mysqldump -uroot -pci_disposable_password_only --single-transaction ci_restore 2>"$tmp/mysql-warnings" >"$tmp/mysql.sql"
 test -s "$tmp/mysql.sql"
 docker exec "$mysql_name" mysql -uroot -pci_disposable_password_only -e 'DROP DATABASE ci_restore; CREATE DATABASE ci_restore;' 2>/dev/null
@@ -26,10 +35,19 @@ test "$mysql_count" = 1
 echo 'PASS: disposable MySQL logical backup and restore'
 
 docker run -d --name "$pg_name" -e POSTGRES_PASSWORD=ci_disposable_password_only -e POSTGRES_DB=ci_restore postgres:17-alpine >/dev/null
-for i in $(seq 1 60); do
-  if docker exec "$pg_name" pg_isready -U postgres -d ci_restore >/dev/null 2>&1; then break; fi
+pg_ready=0
+for i in $(seq 1 90); do
+  if docker exec "$pg_name" psql -U postgres -d ci_restore -Atc 'SELECT 1' >/dev/null 2>&1; then
+    pg_ready=1
+    break
+  fi
   sleep 2
 done
+if (( pg_ready != 1 )); then
+  echo "PostgreSQL database was not ready" >&2
+  docker logs --tail 40 "$pg_name" >&2
+  exit 1
+fi
 docker exec "$pg_name" psql -U postgres -d ci_restore -v ON_ERROR_STOP=1 -c "CREATE TABLE restore_probe(id INT PRIMARY KEY, value_text TEXT); INSERT INTO restore_probe VALUES (1, 'persisted_postgres');" >/dev/null
 docker exec "$pg_name" pg_dump -U postgres -d ci_restore >"$tmp/postgres.sql"
 test -s "$tmp/postgres.sql"
