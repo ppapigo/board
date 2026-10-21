@@ -117,11 +117,14 @@ services:
       - caddy-config:/config
     networks:
       - board-net
+      - proxy-net
     restart: unless-stopped
 
 
 networks:
   board-net:
+    external: true
+  proxy-net:
     external: true
 
 
