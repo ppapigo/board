@@ -1,0 +1,47 @@
+name: Validate deployment shell scripts
+on:
+  pull_request:
+    paths:
+      - 'scripts/deploy.sh'
+      - 'scripts/ops/**'
+      - '.github/workflows/check-deploy-scripts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  docker-rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify real Docker rollback in isolated fixtures
+        env:
+          CI_PROJECT_KIND: board
+        run: bash scripts/tests/integration-docker-rollback.sh
+  database-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify disposable MySQL and PostgreSQL restore
+        run: bash scripts/tests/integration-db-restore.sh
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax
+        run: bash -n scripts/deploy.sh scripts/ops/backup-databases.sh
+      - name: Mock application deployment and rollback
+        run: bash scripts/tests/test-deploy-guard.sh
+      - name: Mock DB backups and failure cleanup
+        run: bash scripts/tests/test-backup-databases.sh
+      - name: Verify required safety controls exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=scripts/deploy.sh
+          grep -Fq -- '--no-deps' "$file"
+          grep -Fq -- '--no-build' "$file"
+          grep -Fq -- 'rollback()' "$file"
+          grep -Fq -- 'compose pull' "$file"
+          ! grep -Eq 'docker compose down|docker volume rm|docker system prune' "$file"

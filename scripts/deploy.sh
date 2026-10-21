@@ -1,22 +1,66 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# Update only application services. Never touch Caddy, DBs or Redis.
+: "${BOARD_IMAGE_TAG:?Missing release SHA}"
+: "${GHCR_USER:?Missing GHCR_USER}"
+: "${GHCR_TOKEN:?Missing GHCR_TOKEN}"
 cd "$HOME/board"
-: "${BOARD_IMAGE_TAG:?BOARD_IMAGE_TAG required}"
-: "${GHCR_USER:?GHCR_USER required}"
-: "${GHCR_TOKEN:?GHCR_TOKEN required}"
-test -s .env || { echo "Missing existing ~/board/.env; refusing to overwrite it" >&2; exit 1; }
+test -s .env && test -s .deploy/docker-compose.yml
 docker network inspect board-net >/dev/null
-docker network inspect proxy-net >/dev/null
 docker inspect caddy >/dev/null
-mkdir -p .deploy
-# The workflow stages only the Compose manifest, NOT the shared Caddyfile.
-test -s .deploy/docker-compose.yml || { echo "Missing staged compose file" >&2; exit 1; }
-echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+compose() { docker compose --project-directory "$HOME/board" -f "$HOME/board/.deploy/docker-compose.yml" -p board "$@"; }
+services=(app chat-app frontend)
+containers=(board-back-end chat-app board-fe-react)
+declare -a previous=()
+declare -a rollback_refs=()
+release_short="${BOARD_IMAGE_TAG:0:12}"
+for container in "${containers[@]}"; do
+  previous+=("$(docker inspect --type container --format '{{.Image}}' "$container")")
+  test -n "${previous[-1]}"
+  docker image inspect "${previous[-1]}" >/dev/null
+done
+for i in "${!services[@]}"; do
+  # Tag the exact running image ID; old mutable tags may have been repointed.
+  rollback_ref="local/board-rollback-${services[i]}:${release_short}"
+  docker image tag "${previous[i]}" "$rollback_ref"
+  rollback_refs+=("$rollback_ref")
+done
+echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
 trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
-export BOARD_IMAGE_TAG
-docker compose --project-directory "$HOME/board" -f .deploy/docker-compose.yml -p board config --quiet
-docker compose --project-directory "$HOME/board" -f .deploy/docker-compose.yml -p board pull app frontend chat-app
-# Redis and MySQL are prerequisites, never deployed or removed here.
-docker compose --project-directory "$HOME/board" -f .deploy/docker-compose.yml -p board up -d --no-deps --no-build --wait app chat-app
-docker compose --project-directory "$HOME/board" -f .deploy/docker-compose.yml -p board up -d --no-deps --no-build --wait frontend
-docker compose --project-directory "$HOME/board" -f .deploy/docker-compose.yml -p board ps
+compose config --quiet
+compose pull "${services[@]}"
+verify() {
+  for container in "${containers[@]}"; do
+    status="$(docker inspect --type container --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}missing-healthcheck{{end}}' "$container")" || return 1
+    [[ "$status" == healthy ]] || { echo "Health check failed for $container: $status" >&2; return 1; }
+  done
+  curl --fail --silent --show-error --retry 5 --retry-delay 3 --max-time 15 --output /dev/null "https://board.grooverapp.com"
+}
+rollback() {
+  echo "Deployment failed; restoring previous immutable image IDs" >&2
+  rollback_file="$(mktemp "/tmp/board-rollback.XXXXXXXX.yml")"
+  chmod 600 "$rollback_file"
+  printf 'services:\n' > "$rollback_file"
+  for i in "${!services[@]}"; do
+    printf '  %s:\n    image: %s\n' "${services[i]}" "${rollback_refs[i]}" >> "$rollback_file"
+  done
+  # Override only application image references; never restart dependencies.
+  if ! compose -f "$rollback_file" up -d --no-deps --no-build --wait "${services[0]}" "${services[1]}"; then
+    echo "Backend rollback failed" >&2
+    rm -f "$rollback_file"
+    return 1
+  fi
+  if ! compose -f "$rollback_file" up -d --no-deps --no-build --wait "${services[${#services[@]}-1]}"; then
+    echo "ROLLBACK FAILED: investigate immediately" >&2
+    rm -f "$rollback_file"
+    return 1
+  fi
+  rm -f "$rollback_file"
+  verify || { echo "Rollback health verification failed" >&2; return 1; }
+  echo "Previous images restored. Database migrations are NOT reverted." >&2
+}
+if ! { compose up -d --no-deps --no-build --wait "${services[0]}" "${services[1]}" && compose up -d --no-deps --no-build --wait "${services[2]}" && verify; }; then
+  rollback || exit 2
+  exit 1
+fi
+echo "Deploy verified for board; images: ${BOARD_IMAGE_TAG}"
