@@ -17,6 +17,8 @@ jobs:
         run: bash -n scripts/deploy.sh scripts/ops/backup-databases.sh
       - name: Mock application deployment and rollback
         run: bash scripts/tests/test-deploy-guard.sh
+      - name: Mock DB backups and failure cleanup
+        run: bash scripts/tests/test-backup-databases.sh
       - name: Verify required safety controls exist
         shell: bash
         run: |
