@@ -117,8 +117,11 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     networks:
-      - board-net
-      - proxy-net
+      board-net:
+      proxy-net:
+        # Must match the exact IP trusted by Groover and Achat.
+        # Existing proxy-net subnet must contain this IP.
+        ipv4_address: ${CADDY_PROXY_IP:-172.20.240.2}
     restart: unless-stopped
 
 
