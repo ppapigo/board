@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly backups of application databases
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 Asia/Seoul
+Persistent=true
+RandomizedDelaySec=5m
+Unit=app-database-backup.service
+
+[Install]
+WantedBy=timers.target
