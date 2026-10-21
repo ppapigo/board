@@ -18,10 +18,16 @@ backup_one() {
   shift
   local target="$BACKUP_DIR/${name}-${timestamp}.sql.gz"
   local tmp="${target}.partial"
-  trap 'rm -f "$tmp"' RETURN
-  "$@" | gzip -1 > "$tmp"
-  test -s "$tmp"
-  gzip -t "$tmp"
+  if ! "$@" | gzip -1 > "$tmp"; then
+    rm -f "$tmp"
+    echo "BACKUP FAILED: $name" >&2
+    return 1
+  fi
+  if ! test -s "$tmp" || ! gzip -t "$tmp"; then
+    rm -f "$tmp"
+    echo "BACKUP INVALID: $name" >&2
+    return 1
+  fi
   mv -- "$tmp" "$target"
   sha256sum "$target" > "$target.sha256"
   echo "OK: $name ($timestamp UTC)"
