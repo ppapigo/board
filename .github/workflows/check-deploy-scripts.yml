@@ -18,6 +18,13 @@ jobs:
         env:
           CI_PROJECT_KIND: board
         run: bash scripts/tests/integration-docker-rollback.sh
+  database-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify disposable MySQL and PostgreSQL restore
+        run: bash scripts/tests/integration-db-restore.sh
   syntax:
     runs-on: ubuntu-latest
     steps:
