@@ -8,9 +8,7 @@ cd "$HOME/board"
 test -s .env && test -s .deploy/docker-compose.yml
 docker network inspect board-net >/dev/null
 docker inspect caddy >/dev/null
-COMPOSE_CMD='docker compose --project-directory "$HOME/board" -f "$HOME/board/.deploy/docker-compose.yml" -p board'
-# Compose command contains only trusted paths. This is a local fixed command, not user input.
-compose() { eval "$COMPOSE_CMD" '"$@"'; }
+compose() { docker compose --project-directory "$HOME/board" -f "$HOME/board/.deploy/docker-compose.yml" -p board "$@"; }
 services=(app chat-app frontend)
 containers=(board-back-end chat-app board-fe-react)
 declare -a previous=()
@@ -39,7 +37,7 @@ rollback() {
     printf '  %s:\n    image: %s\n' "${services[i]}" "${previous[i]}" >> "$rollback_file"
   done
   # Override only application image references; never restart dependencies.
-  if ! eval "$COMPOSE_CMD" '-f "$rollback_file" up -d --no-deps --no-build --wait' '"${services[@]}"'; then
+  if ! compose -f "$rollback_file" up -d --no-deps --no-build --wait "${services[@]}"; then
     echo "ROLLBACK FAILED: investigate immediately" >&2
     rm -f "$rollback_file"
     return 1
