@@ -11,7 +11,7 @@ set -euo pipefail
 if [[ "$*" == *"mysql8"* ]]; then
   printf '%s\n' 'CREATE DATABASE board;'
 elif [[ "$*" == *"achat-prod-mysql-1"* ]]; then
-  if [[ "\${FAIL_ACHAT:-0}" == 1 ]]; then
+  if [[ "${FAIL_ACHAT:-0}" == 1 ]]; then
     printf 'incomplete dump\n'
     exit 42
   fi
