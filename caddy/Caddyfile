@@ -5,6 +5,13 @@
 }
 
 http://3.35.107.235 {
-     reverse_proxy frontend:80 {
-            header_up X-Forwarded-port {http.request.local.port}
+    reverse_proxy frontend:80 {
+        header_up X-Forwarded-port {http.request.local.port}
+    }
+}
+
+achat.grooverapp.com {
+    reverse_proxy achat-web:8080 {
+        header_up X-Real-IP {remote_host}
+    }
 }
