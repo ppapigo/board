@@ -54,7 +54,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
     ports:
-      - "8090:8090"
+      - "127.0.0.1:8090:8090"
     volumes:
       - uploads:/app/uploads
     networks:
