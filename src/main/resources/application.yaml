@@ -1,7 +1,7 @@
 server:
   port: 8090
 
-  forward-haeders-strategy: framework
+  forward-headers-strategy: framework
 
 spring:
   application:
@@ -65,7 +65,7 @@ jwt:
 app:
   refresh-cookie:
     name: refreshToken
-    secure: false
+    secure: ${APP_REFRESH_COOKIE_SECURE:true}
     same-site: Strict
     path: /api/auth
 
